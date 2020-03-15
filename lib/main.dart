@@ -1,19 +1,8 @@
-import 'dart:developer';
-import 'dart:io';
-import 'dart:ui';
-
-import 'package:camera/camera.dart';
-import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:placeholderflutter/Transactions.dart';
 
 import 'Payment.dart';
-import 'colors.dart';
-import 'detector_painters.dart';
-import 'scanner_utils.dart';
 
 void main() => runApp(MyApp());
 
@@ -75,14 +64,14 @@ class _MyHomePageState extends State<MyHomePage> {
     currentIndex: selectedIndex,
     items: const <BottomNavigationBarItem>[
       BottomNavigationBarItem(
-          icon: Icon(Icons.add), title: Text('Payment')),
+          icon: Icon(Icons.add), title: Text('Payment')), //Payment Page
       BottomNavigationBarItem(
-          icon: Icon(Icons.list), title: Text('Transactions')),
+          icon: Icon(Icons.list), title: Text('Transactions')), //Transactions Record Page
     ],
   );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { //Bottom Navigation Widget
 
     return Scaffold(
 

@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:developer';
 
-import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:placeholderflutter/barcode_scanner.dart';
 
-import 'API.dart';
 import 'User.dart';
 import 'package:http/http.dart' as http;
 
@@ -28,7 +25,7 @@ class _PaymentState extends State<Payment> {
 
   Future<List<User>> _future;
 
-  Future<List<User>> _getUsers() async {
+  Future<List<User>> _getUsers() async { //Get list of users from server
     var data = await http.get("https://jsonplaceholder.typicode.com/users");
 
     var jsonData = json.decode(data.body);
@@ -40,8 +37,8 @@ class _PaymentState extends State<Payment> {
 
       users.add(user);
 
-      quantities.add(0);
-      quantitiesString.add("0");
+      quantities.add(0); //Populate array with int 0
+      quantitiesString.add("0"); //Populate array with string "0" so it can be displayed
     }
 
     print(users.length);
@@ -49,7 +46,7 @@ class _PaymentState extends State<Payment> {
     return users;
   }
 
-  Future<List<User>> _refresh() async {
+  Future<List<User>> _refresh() async { //Refresh list of users from server
     setState(() {
       _future = _getUsers();
     });
@@ -75,7 +72,7 @@ class _PaymentState extends State<Payment> {
           Center(
               child: Container(
                 padding: EdgeInsets.fromLTRB(0, 50, 0, 47.5),
-                child: Text(
+                child: Text( //Total amount widget
                   'RM 10',
                   style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.bold),
                 ),
@@ -86,7 +83,7 @@ class _PaymentState extends State<Payment> {
             builder: (context, snapshot) {
               switch (snapshot.connectionState) {
                 case ConnectionState.none:
-                case ConnectionState.waiting:
+                case ConnectionState.waiting: //Display progress circle while loading
                   return Container(
                     child: Center(
                       child:
@@ -94,7 +91,7 @@ class _PaymentState extends State<Payment> {
 
                     )
                   );
-                default:
+                default: //Display card when loaded
                   return Expanded(
                     child:
                     RefreshIndicator(
@@ -116,7 +113,7 @@ class _PaymentState extends State<Payment> {
                                     child: (
                                         ListTile(
                                           title: Text(
-                                              snapshot.data[index].name),
+                                              snapshot.data[index].name), //Show User Name
                                           subtitle: Text('$index'),
                                         )
                                     ),
@@ -129,10 +126,10 @@ class _PaymentState extends State<Payment> {
                                             crossAxisAlignment: CrossAxisAlignment
                                                 .center,
                                             children: [
-                                              SizedBox(
+                                              SizedBox( //Add or subtract product quantity
                                                 width: 30.0,
                                                 child: (
-                                                    FlatButton(
+                                                    FlatButton( //Button to decrease quantity
                                                       child: const Text(
                                                           '-', style: TextStyle(
                                                           fontSize: 50.0,
@@ -142,7 +139,7 @@ class _PaymentState extends State<Payment> {
                                                           .fromLTRB(0, 0, 0, 0),
                                                       onPressed: () {
                                                         setState(() {
-                                                          if (quantities[index] -
+                                                          if (quantities[index] - //Minimum quantity must be 0
                                                               1 >= 0) {
                                                             quantities[index] -=
                                                             1;
@@ -171,7 +168,7 @@ class _PaymentState extends State<Payment> {
                                               SizedBox(
                                                   width: 30.0,
                                                   child: (
-                                                      FlatButton(
+                                                      FlatButton( //Button to increase quantity
                                                         child: const Text('+',
                                                             style: TextStyle(
                                                                 fontSize: 30.0,
@@ -212,7 +209,7 @@ class _PaymentState extends State<Payment> {
       ),
       floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.push(
+            Navigator.push( //Open QR Scanner
               context,
               MaterialPageRoute(builder: (context) => BarcodeScanner(),
               settings: RouteSettings(
