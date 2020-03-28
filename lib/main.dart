@@ -2,6 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:walleTT/pages/topup.dart';
 import 'package:walleTT/pages/history.dart';
+import 'package:walleTT/pages/login.dart';
 
 void main() {
   runApp(new MyApp());
@@ -36,15 +37,17 @@ class _AppState extends State<App> {
     TopUP(),
     History()
   ];
+
   final List<String> _name = [
     'Top up',
     'History'
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
-
+      //App bar lies here
       appBar: AppBar(
         title: Text(
         _name[_page],
@@ -52,42 +55,72 @@ class _AppState extends State<App> {
             fontSize: 28,
           ),
           ),
-      ),
-
-      //What appears on the screen
-      body: _children[_page],
-
-      // Bottom navigation bar
-      bottomNavigationBar: CurvedNavigationBar(
-        color: Theme.of(context).accentColor,
-        buttonBackgroundColor: Theme.of(context).primaryColor,
-        backgroundColor: Colors.white,
-        animationDuration: Duration(milliseconds: 200),
-        animationCurve: Curves.fastLinearToSlowEaseIn,
-        height: 60,
-        index: 0,
         
-        items: <Widget>[
-          Icon(
-            Icons.add_circle,
-            size: 30,
-            color: Colors.white,
-            semanticLabel: "Top up",
-          ),
-          Icon(
-            Icons.history,
-            size: 30,
-            color: Colors.white,
-            semanticLabel: "History",
-          ),
-        ],
-        onTap: (index) {
-          setState(() {
-            _page = index;
-          });
-        },
-        
-      ),
-    );
+        actions: <Widget>[
+          PopupMenuButton(
+            onSelected: popupSelected,
+                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                          new PopupMenuItem(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Row(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.exit_to_app,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                  Text("Logout")
+                                ],
+                              ),
+                            ), 
+                            value: "logout",)
+                        ]
+                        )
+                    ],
+                  ),
+            
+                  //What appears on the screen
+                  body: _children[_page],
+            
+                  // Bottom navigation bar
+                  bottomNavigationBar: CurvedNavigationBar(
+                    color: Theme.of(context).accentColor,
+                    buttonBackgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: Colors.white,
+                    animationDuration: Duration(milliseconds: 200),
+                    animationCurve: Curves.fastLinearToSlowEaseIn,
+                    height: 60,
+                    index: 0,
+                    
+                    items: <Widget>[
+                      Icon(
+                        Icons.add_circle,
+                        size: 30,
+                        color: Colors.white,
+                        semanticLabel: "Top up",
+                      ),
+                      Icon(
+                        Icons.history,
+                        size: 30,
+                        color: Colors.white,
+                        semanticLabel: "History",
+                      ),
+                    ],
+                    onTap: (index) {
+                      setState(() {
+                        _page = index;
+                      });
+                    },
+                    
+                  ),
+                );
+              }
+            
+  void popupSelected(String value) {
+    Navigator.push(context, 
+    MaterialPageRoute(
+      builder: (context) => Login()
+      )
+      );
   }
 }

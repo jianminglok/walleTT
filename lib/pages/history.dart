@@ -8,14 +8,15 @@ class History extends StatefulWidget {
 class _HistoryState extends State<History> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        //example data for illustration
-        transacrion(id: '69420', time: "27-3-2020 20:24", amount: '30'),
-        transacrion(id: '88888', time: "27-3-2020 20:24", amount: '200')
-      ],
+    return ListView.builder(
+      physics: BouncingScrollPhysics(),
+      itemBuilder: (context, position) {
+        return transacrion(
+          id: position.toString(), //user id here
+          time: "27-3-2020 20:24", //Top up time
+          amount: (position * 9).toString() //Top up amount
+          );
+      }
     );
   }
 
