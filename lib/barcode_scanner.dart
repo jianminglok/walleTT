@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:placeholderflutter/Payment.dart';
+import 'package:walleTT/Payment.dart';
 
 import 'colors.dart';
 import 'detector_painters.dart';

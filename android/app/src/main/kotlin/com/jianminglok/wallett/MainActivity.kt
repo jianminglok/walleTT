@@ -1,4 +1,4 @@
-package com.placeholder.placeholderflutter
+package com.jianminglok.wallett
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity
