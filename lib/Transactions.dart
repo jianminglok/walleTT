@@ -81,7 +81,7 @@ class _TransactionsState extends State<Transactions> {
                 default: //Display card when loaded
                   return Expanded(
                     child: Container(
-                        transform: Matrix4.translationValues(0.0, 10.0, 0.0),
+                        margin: EdgeInsets.symmetric(vertical: 10.0),
                       child:
                       RefreshIndicator(
                         key: _refreshIndicatorKey,
