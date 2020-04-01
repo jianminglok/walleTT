@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
+      debugShowCheckedModeBanner: false,
         title: 'walleTT',
         theme: ThemeData(
           primarySwatch: Colors.red,
@@ -87,8 +88,8 @@ class _AppState extends State<App> {
                     color: Theme.of(context).accentColor,
                     buttonBackgroundColor: Theme.of(context).primaryColor,
                     backgroundColor: Colors.white,
-                    animationDuration: Duration(milliseconds: 200),
-                    animationCurve: Curves.fastLinearToSlowEaseIn,
+                    animationDuration: Duration(milliseconds: 250),
+                    animationCurve: Curves.bounceOut,
                     height: 60,
                     index: 0,
                     
@@ -111,7 +112,7 @@ class _AppState extends State<App> {
                         _page = index;
                       });
                     },
-                    
+                  
                   ),
                 );
               }
