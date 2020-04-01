@@ -1,12 +1,15 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'dart:math';
 
+import 'package:basic_utils/basic_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:intl/intl.dart';
 import 'package:walleTT/tabsContainer.dart';
 
-import 'User.dart';
+import 'Order.dart';
 import 'barcode_scanner.dart';
 import 'package:http/http.dart' as http;
 
@@ -22,27 +25,34 @@ class _TransactionsState extends State<Transactions> {
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
+  bool _isLoading = true;
+  bool _hasMore = true;
+
   @override
   bool get wantKeepAlive => true;
 
-  Future<List<User>> _future;
+  Future<List<Order>> _future;
 
-  Future<List<User>> _getUsers() async { //Get list of users from server
-    var data = await http.get("https://jsonplaceholder.typicode.com/users");
+  Future<List<Order>> _getUsers() async {
+    //Get list of users from server
+    var data = await http.get(
+        "https://my-json-server.typicode.com/jianminglok/wallettJson/order");
 
     var jsonData = json.decode(data.body);
 
-    List<User> users = [];
+    List<Order> users = [];
 
     for (var i in jsonData) {
-      User user = User(i["id"], i["name"], i["email"]);
+      Order user = Order(
+          int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
+          int.parse(i["user"]["id"]), i["user"]["name"]);
 
       users.add(user);
     }
     return users;
   }
 
-  Future<List<User>> _refresh() async { //Refresh list of users from server
+  Future<List<Order>> _refresh() async { //Refresh list of users from server
     setState(() {
       _future = _getUsers();
     });
@@ -51,6 +61,8 @@ class _TransactionsState extends State<Transactions> {
   @override
   void initState() {
     super.initState();
+    _isLoading = true;
+    _hasMore = true;
     _future = _getUsers();
   }
 
@@ -66,7 +78,7 @@ class _TransactionsState extends State<Transactions> {
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              FutureBuilder<List<User>>(
+              FutureBuilder<List<Order>>(
               future: _future,
               builder: (context, snapshot) {
               switch (snapshot.connectionState) {
@@ -105,7 +117,18 @@ class _TransactionsState extends State<Transactions> {
                                         onLongPress: () {
                                         },
                                         onTap: () {
-                                          _reverseTransaction(snapshot.data[index].name, snapshot.data[index].id.toString(), '1');
+                                          if(snapshot.data[index].status == 'approved') {
+                                            _reverseTransaction(
+                                                snapshot.data[index].time,
+                                                snapshot.data[index].userName,
+                                                snapshot.data[index].userId,
+                                                snapshot.data[index].orderId,
+                                                snapshot.data[index].amount);
+                                          } else if (snapshot.data[index].status == 'reversed') {
+                                              Scaffold.of(context).showSnackBar(SnackBar(
+                                                content: Text("Transaction already reversed"),
+                                              ));
+                                          }
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.all(15.0),
@@ -116,11 +139,11 @@ class _TransactionsState extends State<Transactions> {
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: <Widget>[
                                                   Text(
-                                                    snapshot.data[index].name,
+                                                    snapshot.data[index].userName + ' (' + snapshot.data[index].userId.toString() + ')',
                                                     style: Theme.of(context).textTheme.subhead,
                                                   ),
                                                   Text(
-                                                    'ID: ' + snapshot.data[index].id.toString(),
+                                                    'Order ID: ' + snapshot.data[index].orderId.toString(),
                                                     style: Theme.of(context).textTheme.subhead,
                                                   ),
                                                 ],
@@ -133,7 +156,7 @@ class _TransactionsState extends State<Transactions> {
                                                 crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: <Widget>[
                                                   Text(
-                                                    "Test",
+                                                    snapshot.data[index].amount.toStringAsFixed(2),
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .headline
@@ -146,16 +169,16 @@ class _TransactionsState extends State<Transactions> {
                                                 ],
                                               ),
                                               Chip(
-                                                backgroundColor: Color(0xff03da9d).withAlpha(30),
+                                                backgroundColor: snapshot.data[index].status == 'approved' ? Color(0xff03da9d).withAlpha(30) : Theme.of(context).primaryColor.withAlpha(30),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.all(
                                                     Radius.circular(8),
                                                   ),
                                                 ),
                                                 label: Text(
-                                                  "Approved",
-                                                  style: TextStyle(
-                                                      color: Color(0xff03da9d)),
+                                                  StringUtils.capitalize(snapshot.data[index].status),
+                                                  style: TextStyle(color:
+                                                      snapshot.data[index].status == 'approved' ? Color(0xff03da9d) : Theme.of(context).primaryColor),
                                                 ),
                                               ),
                                               Expanded(
@@ -164,7 +187,7 @@ class _TransactionsState extends State<Transactions> {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: <Widget>[
                                                     Text(
-                                                      "2020-03-29 18:59:22",
+                                                      snapshot.data[index].time,
                                                       style: Theme.of(context).textTheme.body1,
                                                     ),
                                                   ],
@@ -190,9 +213,9 @@ class _TransactionsState extends State<Transactions> {
     );
   }
 
-  void _reverseTransaction(String name, String id, String amount) {
+  void _reverseTransaction(String time, String userName, int userId, int orderId, double amount) {
     String displayAmount =
-        FlutterMoneyFormatter(amount: double.parse(amount)).output.nonSymbol;
+        FlutterMoneyFormatter(amount: amount).output.nonSymbol;
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
@@ -234,7 +257,7 @@ class _TransactionsState extends State<Transactions> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
-                        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
+                        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(time)),
                         style: Theme.of(context).textTheme.title,
                       ),
                     ],
@@ -255,7 +278,7 @@ class _TransactionsState extends State<Transactions> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
-                        name,
+                        userName + ' (' + userId.toString() + ')' ,
                         style: Theme.of(context).textTheme.title,
                       ),
                     ],
@@ -276,7 +299,7 @@ class _TransactionsState extends State<Transactions> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
-                        id,
+                        orderId.toString(),
                         style: Theme.of(context).textTheme.title,
                       ),
                     ],
@@ -336,5 +359,33 @@ class _TransactionsState extends State<Transactions> {
         ),
       ),
     );
+  }
+}
+
+class _ItemFetcher {
+  final _count = 6;
+  final _itemsPerPage = 5;
+  int _currentPage = 0;
+
+  Future<List<Order>> _getUsers() async { //Get list of users from server
+    var data = await http.get("https://my-json-server.typicode.com/jianminglok/wallettJson/order");
+
+    var jsonData = json.decode(data.body);
+
+    List<Order> users = [];
+
+    final n = min(_itemsPerPage, _count - _currentPage * _itemsPerPage);
+
+    for (var i in jsonData) {
+      if(i < n) {
+        Order user = Order(
+            int.parse(i["id"]), i["status"], double.parse(i["amount"]),
+            i["time"], int.parse(i["user"]["id"]), i["user"]["name"]);
+        users.add(user);
+      }
+    }
+
+    _currentPage++;
+    return users;
   }
 }

@@ -7,7 +7,7 @@ import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
-import 'User.dart';
+import 'Order.dart';
 import 'package:http/http.dart' as http;
 
 class Payment extends StatefulWidget {
@@ -29,40 +29,9 @@ class _PaymentState extends State<Payment> {
   final quantities = [];
   final quantitiesString = [];
 
-  Future<List<User>> _future;
-
-  Future<List<User>> _getUsers() async { //Get list of users from server
-    var data = await http.get("https://jsonplaceholder.typicode.com/users");
-
-    var jsonData = json.decode(data.body);
-
-    List<User> users = [];
-
-    for (var i in jsonData) {
-      User user = User(i["id"], i["name"], i["email"]);
-
-      users.add(user);
-
-      quantities.add(0); //Populate array with int 0
-      quantitiesString.add("0"); //Populate array with string "0" so it can be displayed
-    }
-
-    print(users.length);
-
-    return users;
-  }
-
-  Future<List<User>> _refresh() async { //Refresh list of users from server
-    setState(() {
-      _future = _getUsers();
-    });
-  }
-
-
   @override
   void initState() {
     super.initState();
-    _future = _getUsers();
   }
 
   var _list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0];
