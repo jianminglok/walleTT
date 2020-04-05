@@ -15,12 +15,19 @@ import 'OrderInfo.dart';
 import 'barcode_scanner.dart';
 import 'package:http/http.dart' as http;
 
+int orderLength;
+Future<List<Order>> _future;
+
 class Transactions extends StatefulWidget {
 
   Transactions({Key key}) : super(key: key);
 
   @override
   _TransactionsState createState() => _TransactionsState();
+
+  void checkOrderLength() async {
+    _TransactionsState().refreshOrder();
+  }
 
 }
 
@@ -32,8 +39,6 @@ class _TransactionsState extends State<Transactions> {
 
   @override
   bool get wantKeepAlive => true;
-
-  Future<List<Order>> _future;
 
   Future<List<Order>> _getUsers() async {
     //Get list of users from server
@@ -68,7 +73,7 @@ class _TransactionsState extends State<Transactions> {
   }
 
 
-  Future<List<Order>> _refreshOrder() async { //Refresh list of users from server
+  Future<List<Order>> refreshOrder() async { //Refresh list of users from server
     setState(() {
       _future = _getUsers();
     });
@@ -114,7 +119,7 @@ class _TransactionsState extends State<Transactions> {
                       child:
                       RefreshIndicator(
                         key: _refreshIndicatorKey,
-                        onRefresh: _refreshOrder,
+                        onRefresh: refreshOrder,
                         child:
                           ListView.builder(
                           itemCount: snapshot.data.length,

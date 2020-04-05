@@ -8,7 +8,7 @@ import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
-import 'Transactions.dart' as Transactions;
+import 'Transactions.dart';
 import 'package:http/http.dart' as http;
 
 import 'Product.dart';
@@ -36,13 +36,55 @@ class _PaymentState extends State<Payment> {
 
   Future<List<Product>> _future;
   Future<String> _paymentResult;
+  Future<String> _verifyResult;
 
-  final quantities = [];
-  final quantitiesString = [];
-  final productsList = [];
-  final productsNameList = [];
+  var quantities = [];
+  var quantitiesString = [];
+  var productsList = [];
+  var productsNameList = [];
 
   TextEditingController _amountController = TextEditingController();
+
+  Future<String> _verify(formData, paymentData) async {
+    try {
+      Response response = await Dio().post("http://10.0.88.178/verify.php", data: formData);
+      var jsonData = json.decode(response.toString());
+
+      String loginStatus = jsonData["status"];
+      String status;
+
+      if(loginStatus == 'ok') {
+        try {
+          Response response = await Dio().post("http://10.0.88.178/process.php", data: paymentData);
+          var jsonData = json.decode(response.toString());
+
+          String paymentStatus = jsonData["status"];
+
+          //Transactions().checkOrderLength();
+
+          if(paymentStatus == 'successful') {
+            setState(() {
+              totalAmount = 0;
+              for (var i = 0; i < quantities.length; i++) {
+                quantitiesString[i] = '0';
+                quantities[i] = 0;
+                _amountController.text = '0';
+              }
+            });
+          }
+
+          status = paymentStatus;
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
+      }
+      return status;
+    } catch (e) {
+      print(e);
+    }
+  }
 
   Future<String> _doPayment(formData) async {
     try {
@@ -50,6 +92,8 @@ class _PaymentState extends State<Payment> {
       var jsonData = json.decode(response.toString());
 
       String status = jsonData["status"];
+
+      //Transactions().checkOrderLength();
 
       return status;
     } catch (e) {
@@ -93,6 +137,12 @@ class _PaymentState extends State<Payment> {
 
   Future<List<Product>> _refresh() async { //Refresh list of users from server
     setState(() {
+      totalAmount = 0;
+      for (var i = 0; i < quantities.length; i++) {
+        quantitiesString[i] = '0';
+        quantities[i] = 0;
+        _amountController.text = '0';
+      }
       _future = _getProducts();
     });
   }
@@ -220,11 +270,23 @@ class _PaymentState extends State<Payment> {
                                                                         children: <Widget>[
                                                                           Expanded(
                                                                             child: (
-                                                                                ListTile(
-                                                                                  title: Text(
-                                                                                      snapshot.data[index].name,
-                                                                                      style: Theme.of(context).textTheme.title,
-                                                                                  ),
+                                                                                Column(
+                                                                                  children: <Widget>[
+                                                                                    ListTile(
+                                                                                      title: Text(
+                                                                                        snapshot.data[index].name,
+                                                                                        style: Theme.of(context).textTheme.title,
+                                                                                      ),
+                                                                                      subtitle:
+                                                                                          Container(
+                                                                                            padding: EdgeInsets.only(top: 10.0),
+                                                                                            child: Text(
+                                                                                              'RM ' + FlutterMoneyFormatter(amount:snapshot.data[index].price).output.nonSymbol,
+                                                                                              style: Theme.of(context).textTheme.subhead,
+                                                                                            ),
+                                                                                          )
+                                                                                    ),
+                                                                                  ],
                                                                                 )
                                                                             ),
                                                                           ),
@@ -361,7 +423,7 @@ class _PaymentState extends State<Payment> {
     final quantitiesList = [];
     final nameList = [];
 
-    if(_amount.isNotEmpty) {
+    if(_amount.isNotEmpty && int.parse(_amount) > 0) {
       for (var i = 0; i < quantities.length; i++) {
         if (quantities[i] != 0) {
           idList.add('"' + products[i].toString() + '"');
@@ -530,8 +592,16 @@ class _PaymentState extends State<Payment> {
                                   map['type'] = 'payment';
 
                                   FormData paymentData = new FormData.fromMap(map);
+
+                                  var loginMap = new Map<String, dynamic>();
+                                  loginMap['USER'] = 'A001';
+                                  loginMap['PASS'] = 'A001';
+                                  loginMap['type'] = 'payment';
+
+                                  FormData loginData = new FormData.fromMap(loginMap);
+
                                   if(makingPayment == false) {
-                                    _paymentResult = _doPayment(paymentData);
+                                    _verifyResult = _verify(loginData, paymentData);
                                     Navigator.pop(context);
 
                                     showModalBottomSheet(
@@ -554,7 +624,7 @@ class _PaymentState extends State<Payment> {
                                                         padding: const EdgeInsets.all(26.0),
                                                         child: Center(
                                                                 child: FutureBuilder<String>(
-                                                                  future: _paymentResult,
+                                                                  future: _verifyResult,
                                                                   builder: (context, snapshot) {
                                                                     switch (snapshot.connectionState) {
                                                                       case ConnectionState.none:
@@ -687,7 +757,7 @@ class _PaymentState extends State<Payment> {
       }
     } else {
       Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text("Amount cannot be empty!"),
+        content: Text("Amount must be larger than 0!"),
       ));
     }
   }
