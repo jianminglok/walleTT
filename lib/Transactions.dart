@@ -62,7 +62,7 @@ class _TransactionsState extends State<Transactions> {
       for (var i in jsonData) {
         Order user = Order(
             int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
-            i["user"]["id"], i["user"]["name"]);
+            i["user"]["id"], i["user"]["name"], i["products"], i["amounts"]);
 
         users.add(user);
       }
@@ -149,7 +149,9 @@ class _TransactionsState extends State<Transactions> {
                                                     snapshot.data[index].userId,
                                                     snapshot.data[index].orderId,
                                                     snapshot.data[index].amount,
-                                                    snapshot.data[index].status),
+                                                    snapshot.data[index].status,
+                                                    snapshot.data[index].products,
+                                                    snapshot.data[index].quantities),
                                               ),
                                             ),
                                           );
@@ -252,34 +254,8 @@ class OrderInfoArguments {
   final int orderId;
   final double amount;
   final String status;
+  final products;
+  final quantities;
 
-  OrderInfoArguments(this.time, this.userName, this.userId, this.orderId, this.amount, this.status);
-}
-
-class _ItemFetcher {
-  final _count = 6;
-  final _itemsPerPage = 5;
-  int _currentPage = 0;
-
-  Future<List<Order>> _getUsers() async { //Get list of users from server
-    var data = await http.get("https://my-json-server.typicode.com/jianminglok/wallettJson/order");
-
-    var jsonData = json.decode(data.body);
-
-    List<Order> users = [];
-
-    final n = min(_itemsPerPage, _count - _currentPage * _itemsPerPage);
-
-    for (var i in jsonData) {
-      if(i < n) {
-        Order user = Order(
-            int.parse(i["id"]), i["status"], double.parse(i["amount"]),
-            i["time"], i["user"]["id"], i["user"]["name"]);
-        users.add(user);
-      }
-    }
-
-    _currentPage++;
-    return users;
-  }
+  OrderInfoArguments(this.time, this.userName, this.userId, this.orderId, this.amount, this.status, this.products, this.quantities);
 }
