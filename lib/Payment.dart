@@ -1,14 +1,17 @@
 import 'dart:convert';
 
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
-import 'Order.dart';
+import 'Transactions.dart' as Transactions;
 import 'package:http/http.dart' as http;
+
+import 'Product.dart';
 
 class Payment extends StatefulWidget {
   Payment({Key key}) : super(key: key);
@@ -19,70 +22,85 @@ class Payment extends StatefulWidget {
 
 class _PaymentState extends State<Payment> {
 
-  TextEditingController _amountController = TextEditingController();
-
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
+
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+
+  var totalAmount = 0;
 
   @override
   bool get wantKeepAlive => true;
 
+  bool makingPayment = false;
+  bool success = false;
+
+  Future<List<Product>> _future;
+  Future<String> _paymentResult;
+
   final quantities = [];
   final quantitiesString = [];
+  final productsList = [];
+  final productsNameList = [];
+
+  TextEditingController _amountController = TextEditingController();
+
+  Future<String> _doPayment(formData) async {
+    try {
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+      var jsonData = json.decode(response.toString());
+
+      String status = jsonData["status"];
+
+      return status;
+    } catch (e) {
+        print(e);
+    }
+  }
+
+  Future<List<Product>> _getProducts() async {
+    //Get list of users from server
+
+    var map = new Map<String, dynamic>();
+    map['id'] = 'S001';
+    map['type'] = 'products';
+
+    FormData formData = new FormData.fromMap(map);
+
+    try {
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+
+      var jsonData = json.decode(response.toString());
+
+      List<Product> products = [];
+
+      for (var i in jsonData) {
+        Product product = Product(
+            i["id"], i["name"], double.parse(i["price"]));
+
+        products.add(product);
+
+        quantities.add(0);
+        quantitiesString.add("0");
+        productsNameList.add(i["name"]);
+        productsList.add(i["id"]);
+      }
+
+      return products;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<Product>> _refresh() async { //Refresh list of users from server
+    setState(() {
+      _future = _getProducts();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-  }
-
-  var _list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0];
-
-  Widget _buildButton(int index) {
-    return Material(
-      color: Colors.grey[50],
-      child: InkWell(
-        child: Center(
-          child: index == 11 ? Icon(Icons.backspace) : index == 9 ? Semantics() : Text(_list[index].toString(), style: TextStyle(fontSize: 26.0)),
-        ),
-        onLongPress: () {
-          if (index == 11) {
-            if (_amountController.text.length == 0) {
-              return;
-            }
-            else {
-              _amountController.text = _amountController.text.substring(0, _amountController.text.length - _amountController.text.length);
-            }
-          }
-        },
-        onTap: () {
-          if (index == 9) {
-            return;
-          }
-          else if (index == 11) {
-            if (_amountController.text.length == 0) {
-              return;
-            }
-            else {
-              _amountController.text = _amountController.text.substring(0, _amountController.text.length - 1);
-            }
-          }
-          else {
-            if (_amountController.text.length == 0) {
-              if (index == 10) {
-
-                return;
-              } else {
-                _amountController.text = _amountController.text == '' ? _list[index].toString() : _amountController.text + _list[index].toString();
-              }
-            }
-            else {
-              _amountController.text = _amountController.text == '' ? _list[index].toString() : _amountController.text + _list[index].toString();
-            }
-          }
-          setState(() {
-          });
-        },
-      ),
-    );
+    _future = _getProducts();
   }
 
   @override
@@ -139,165 +157,186 @@ class _PaymentState extends State<Payment> {
                 padding: EdgeInsets.only(top: 65.0),
                 child: TabsContainer(),
               ),
-              Container(
-                  margin: EdgeInsets.only(top: 40.0),
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.only(bottom: 10.0),
-                        child: Text('How much?', style: TextStyle(fontSize: 40.0, fontWeight: FontWeight.w700)),
-                      ),
-                      Container(
-                          padding: EdgeInsets.only(bottom: 20.0),
-                          child: Row(
-                            children: <Widget>[
-                              Container(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ActionChip(
-                                  label: Text('5'),
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _amountController.text = '5';
-                                  },
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ActionChip(
-                                  label: Text('10'),
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _amountController.text = '10';
-                                  },
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ActionChip(
-                                  label: Text('20'),
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _amountController.text = '20';
-                                  },
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ActionChip(
-                                  label: Text('50'),
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _amountController.text = '50';
-                                  },
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: ActionChip(
-                                  label: Text('100'),
-                                  backgroundColor: Colors.white,
-                                  elevation: 1,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(8),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    _amountController.text = '100';
-                                  },
-                                ),
-                              ),
-                            ],
+              Expanded(
+                  child: Container(
+                      margin: EdgeInsets.only(top: 40.0),
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Container(
+                          padding: EdgeInsets.only(bottom: 10.0),
+                          child: Text('How much?', style: TextStyle(fontSize: 40.0, fontWeight: FontWeight.w700)),
+                        ),
+                        TextField(
+                          enabled: false,
+                          decoration: InputDecoration(contentPadding: EdgeInsets.all(12), prefixIcon: Padding(padding: EdgeInsets.all(15), child: Text('RM'))),
+                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                          controller: _amountController,
+                          keyboardType: TextInputType.numberWithOptions(
+                            decimal: true,
                           ),
-                      ),
-                      TextField(
-                        enabled: false,
-                        decoration: InputDecoration(contentPadding: EdgeInsets.all(12), prefixIcon: Padding(padding: EdgeInsets.all(15), child: Text('RM'))),
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-                        controller: _amountController,
-                        keyboardType: TextInputType.numberWithOptions(
-                          decimal: true,
                         ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 1.0, bottom: 30.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            GridView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: 2,
-                                mainAxisSpacing: 0.6,
-                                crossAxisSpacing: 0.6
-                              ),
-                              itemCount: 12,
-                              itemBuilder: (_, index) => _buildButton(index)
-                            ),
-                          ]
+                        FutureBuilder<List<Product>>(
+                            future: _future,
+                            builder: (context, snapshot) {
+                              switch (snapshot.connectionState) {
+                                case ConnectionState.none:
+                                case ConnectionState.waiting: //Display progress circle while loading
+                                  return Container(
+                                      padding: EdgeInsets.only(top: 30.0),
+                                      child: Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                  );
+                                default: //Display card when loaded
+                                  return Expanded(
+                                      child: Container(
+                                          child:
+                                          RefreshIndicator(
+                                              key: _refreshIndicatorKey,
+                                              onRefresh: _refresh,
+                                              child:
+                                              ListView.builder(
+                                                  itemCount: snapshot.data.length,
+                                                  itemBuilder: (BuildContext context, int index) =>
+                                                      Container(
+                                                          child: Container(
+                                                            padding: EdgeInsets.fromLTRB(0, 1.25, 0, 1.25),
+                                                            child: SizedBox(
+                                                                width: double.infinity,
+                                                                child: Card(
+                                                                  shape: RoundedRectangleBorder(
+                                                                    borderRadius: BorderRadius.circular(18),
+                                                                  ),
+                                                                  child: InkWell(
+                                                                    borderRadius: BorderRadius.circular(18),
+                                                                    child: Padding(
+                                                                      padding: const EdgeInsets.all(15.0),
+                                                                      child: Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                                                        children: <Widget>[
+                                                                          Expanded(
+                                                                            child: (
+                                                                                ListTile(
+                                                                                  title: Text(
+                                                                                      snapshot.data[index].name,
+                                                                                      style: Theme.of(context).textTheme.title,
+                                                                                  ),
+                                                                                )
+                                                                            ),
+                                                                          ),
+                                                                          Expanded(
+                                                                            child: (
+                                                                                Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceEvenly,
+                                                                                    crossAxisAlignment: CrossAxisAlignment
+                                                                                        .center,
+                                                                                    children: [
+                                                                                      SizedBox(
+                                                                                        width: 30.0,
+                                                                                        child: (
+                                                                                            FlatButton(
+                                                                                              child: const Text(
+                                                                                                  '-', style: TextStyle(
+                                                                                                  fontSize: 50.0,
+                                                                                                  fontWeight: FontWeight
+                                                                                                      .w200)),
+                                                                                              padding: EdgeInsets
+                                                                                                  .fromLTRB(0, 0, 0, 0),
+                                                                                              onPressed: () {
+                                                                                                setState(() {
+                                                                                                  if (quantities[index] -
+                                                                                                      1 >= 0) {
+                                                                                                    quantities[index] -=
+                                                                                                    1;
+                                                                                                    totalAmount = totalAmount - snapshot.data[index].price.toInt();
+                                                                                                    quantitiesString[index] =
+                                                                                                        quantities[index]
+                                                                                                            .toString();
+                                                                                                    _amountController.text = totalAmount.toString();
+                                                                                                  } else {
+                                                                                                    Scaffold.of(context)
+                                                                                                        .showSnackBar(
+                                                                                                        SnackBar(
+                                                                                                            content: Text(
+                                                                                                                "Minimum quantity is 0")));
+                                                                                                  }
+                                                                                                });
+                                                                                              },
+                                                                                            )
+                                                                                        ),
+                                                                                      ),
+                                                                                      Text(
+                                                                                        quantitiesString[index],
+                                                                                        style: TextStyle(
+                                                                                            fontSize: 25.0,
+                                                                                            fontWeight: FontWeight
+                                                                                                .w400),
+                                                                                      ),
+                                                                                      SizedBox(
+                                                                                          width: 30.0,
+                                                                                          child: (
+                                                                                              FlatButton(
+                                                                                                child: const Text('+',
+                                                                                                    style: TextStyle(
+                                                                                                        fontSize: 30.0,
+                                                                                                        fontWeight: FontWeight
+                                                                                                            .w300)),
+                                                                                                padding: EdgeInsets
+                                                                                                    .fromLTRB(
+                                                                                                    0, 0, 0, 0),
+                                                                                                onPressed: () {
+                                                                                                  setState(() {
+                                                                                                    quantities[index] += 1;
+                                                                                                    totalAmount = totalAmount + snapshot.data[index].price.toInt();
+                                                                                                    quantitiesString[index] =
+                                                                                                        quantities[index]
+                                                                                                            .toString();
+                                                                                                    _amountController.text = totalAmount.toString();
+                                                                                                  });
+                                                                                                },
+                                                                                              )
+                                                                                          )
+                                                                                      ),
+                                                                                    ]
+                                                                                )
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                            ),
+                                                          )
+                                                      )
+                                              )
+                                          )
+                                      )
+                                  );
+                              }
+                            }
                         ),
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50.0,
-                        child: RaisedButton.icon(
-                          icon: Icon(Icons.center_focus_strong, color: Colors.white,),
-                          label: Text("Scan QR Code", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                          onPressed: () {
-                            _scan(_amountController.text, context);
-                          },
-                        )
-                      )
-                    ],
-                  )
+                      ],
+                    )
+                  ),
               )
             ],
           ),
         ],
       ),
-      //floatingActionButton: FloatingActionButton.extended(
-      //    onPressed: () {
-      //      Navigator.push( //Open QR Scanner
-      //        context,
-      //        MaterialPageRoute(builder: (context) => BarcodeScanner(),
-      //        settings: RouteSettings(
-      //        arguments: quantities,
-      //        ),
-      //        ),
-      //      );
-      //    },
-      //     label: Text('Scan QR'),
-      //    icon: Icon(Icons.add)),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
+      floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            _scan(_amountController.text, quantities, productsList, productsNameList, context);
+          },
+          label: Text("Scan QR Code", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+          icon: Icon(Icons.center_focus_strong)),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      );
   }
 
 
@@ -316,142 +355,329 @@ class _PaymentState extends State<Payment> {
     return null;
   }
 
-  void _scan(String _amount, BuildContext context) async {
+  void _scan(String _amount, quantities, products, names, BuildContext context) async {
+
+    final idList = [];
+    final quantitiesList = [];
+    final nameList = [];
+
     if(_amount.isNotEmpty) {
+      for (var i = 0; i < quantities.length; i++) {
+        if (quantities[i] != 0) {
+          idList.add('"' + products[i].toString() + '"');
+          quantitiesList.add(quantities[i]);
+          nameList.add(names[i]);
+        }
+      }
+
       String id = await scan(context);
       String displayAmount =
           FlutterMoneyFormatter(amount: double.parse(_amount)).output.nonSymbol;
       if (id != null) {
         showModalBottomSheet(
+            isScrollControlled:true,
             context: context,
             backgroundColor: Colors.transparent,
             builder: (context) {
-              return Container(
-                height: 450,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(18),
-                    topRight: Radius.circular(18),
+              return Wrap(
+                children: <Widget>[
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                    ),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(26.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Text(
-                          'Confirm Payment?',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline
-                              .copyWith(fontWeight: FontWeight.bold)),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              "Time",
-                              style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Padding(
+                      padding: const EdgeInsets.all(26.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.max,
                         children: <Widget>[
                           Text(
-                            DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
-                            style: Theme.of(context).textTheme.title,
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              "Name",
-                              style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                              'Confirm Payment?',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline
+                                  .copyWith(fontWeight: FontWeight.bold)),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  "Time",
+                                  style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            'ABCDE',
-                            style: Theme.of(context).textTheme.title,
                           ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              "ID",
-                              style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
+                                style: Theme.of(context).textTheme.title,
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  "ID",
+                                  style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            id,
-                            style: Theme.of(context).textTheme.title,
                           ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(
-                              "Amount (RM)",
-                              style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                id,
+                                style: Theme.of(context).textTheme.title,
+                              ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  "Product",
+                                  style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                                ),
+                                Text(
+                                  "Quantity",
+                                  style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            displayAmount,
-                            style: TextStyle(fontSize: 60.0, fontWeight: FontWeight.w800),
                           ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          FlatButton(
-                            child: Text("Cancel", style: TextStyle(fontSize: 18.0)),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Expanded(
+                                  child: ListView.builder
+                                    (
+                                      shrinkWrap: true,
+                                      itemCount: nameList.length,
+                                      itemBuilder: (BuildContext context, int index) {
+                                        return Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Text(
+                                              nameList[index],
+                                              style: Theme.of(context).textTheme.title,
+                                            ),
+                                            Text(
+                                              quantitiesList[index].toString(),
+                                              style: Theme.of(context).textTheme.title,
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                  )
+                              )
+                            ],
                           ),
-                          RaisedButton(
-                            child:
-                            Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text(
+                                  "Amount (RM)",
+                                  style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text(
+                                displayAmount,
+                                style: TextStyle(fontSize: 60.0, fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              FlatButton(
+                                child: Text("Cancel", style: TextStyle(fontSize: 18.0)),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              RaisedButton(
+                                child:
+                                Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                onPressed: () {
+                                  var map = new Map<String, dynamic>();
+                                  map['userId'] = id;
+                                  map['storeId'] = 'S001';
+                                  map['time'] = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+                                  map['amount'] = _amount;
+                                  map['products'] = idList.toString();
+                                  map['numbers'] = quantitiesList.toString();
+                                  map['type'] = 'payment';
+
+                                  FormData paymentData = new FormData.fromMap(map);
+                                  if(makingPayment == false) {
+                                    _paymentResult = _doPayment(paymentData);
+                                    Navigator.pop(context);
+
+                                    showModalBottomSheet(
+                                        isScrollControlled:true,
+                                        context: context,
+                                        isDismissible: false,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (context) {
+                                          return Wrap(
+                                              children: <Widget>[
+                                                Container(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius: BorderRadius.only(
+                                                        topLeft: Radius.circular(18),
+                                                        topRight: Radius.circular(18),
+                                                      ),
+                                                    ),
+                                                    child: Padding(
+                                                        padding: const EdgeInsets.all(26.0),
+                                                        child: Center(
+                                                                child: FutureBuilder<String>(
+                                                                  future: _paymentResult,
+                                                                  builder: (context, snapshot) {
+                                                                    switch (snapshot.connectionState) {
+                                                                      case ConnectionState.none:
+                                                                      case ConnectionState.waiting: //Display progress circle while loading
+                                                                        return Column(
+                                                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                                            mainAxisSize: MainAxisSize.max,
+                                                                            children: <Widget>[
+                                                                                Center(
+                                                                                  child: CircularProgressIndicator(),
+                                                                                )
+                                                                              ]
+                                                                          );
+                                                                      default: //Display card when loaded
+                                                                        return snapshot.data == 'successful' ?
+                                                                            Column(
+                                                                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                                                mainAxisSize: MainAxisSize.max,
+                                                                                children: <Widget>[
+                                                                                  Center(
+                                                                                    child: Icon(
+                                                                                      Icons.check,
+                                                                                      color: Color(0xff03da9d),
+                                                                                      size: 60.0,
+                                                                                    ),
+                                                                                  ),
+                                                                                  Center(
+                                                                                    child: Text(
+                                                                                      'Successful',
+                                                                                      style: Theme
+                                                                                          .of(context)
+                                                                                          .textTheme
+                                                                                          .title,
+                                                                                    ),
+                                                                                  ),
+                                                                                  Padding(
+                                                                                    padding: const EdgeInsets.only(top: 24.0),
+                                                                                  ),
+                                                                                  Row(
+                                                                                    mainAxisAlignment: MainAxisAlignment
+                                                                                        .spaceAround,
+                                                                                    children: <Widget>[
+                                                                                      RaisedButton(
+                                                                                        child:
+                                                                                        Text("Confirm", style: TextStyle(
+                                                                                            color: Colors.white, fontSize: 18.0)),
+                                                                                        onPressed: () {
+                                                                                          setState(() {
+                                                                                            makingPayment = false;
+                                                                                          });
+                                                                                          Navigator.pop(context);
+                                                                                        },
+                                                                                      )
+                                                                                    ],
+                                                                                  )
+                                                                                ]
+                                                                            ) : Column(
+                                                                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                                                  mainAxisSize: MainAxisSize.max,
+                                                                                  children: <Widget>[
+                                                                                    Center(
+                                                                                      child: Icon(
+                                                                                        Icons.clear,
+                                                                                        color: Theme.of(context).primaryColor,
+                                                                                        size: 60.0,
+                                                                                      ),
+                                                                                    ),
+                                                                                    Center(
+                                                                                      child: Text(
+                                                                                        snapshot.data.toString(),
+                                                                                        style: Theme
+                                                                                            .of(context)
+                                                                                            .textTheme
+                                                                                            .title,
+                                                                                      ),
+                                                                                    ),
+                                                                                    Padding(
+                                                                                      padding: const EdgeInsets.only(top: 24.0),
+                                                                                    ),
+                                                                                    Row(
+                                                                                      mainAxisAlignment: MainAxisAlignment
+                                                                                          .spaceAround,
+                                                                                      children: <Widget>[
+                                                                                        RaisedButton(
+                                                                                          child:
+                                                                                          Text("Confirm", style: TextStyle(
+                                                                                              color: Colors.white, fontSize: 18.0)),
+                                                                                          onPressed: () {
+                                                                                            setState(() {
+                                                                                              makingPayment = false;
+                                                                                            });
+                                                                                            Navigator.pop(context);
+                                                                                          },
+                                                                                        )
+                                                                                      ],
+                                                                                    )
+                                                                                  ]
+                                                                              );
+                                                                      }
+                                                                    }
+                                                                )
+                                                        )
+                                                    )
+                                                )
+                                              ]
+                                          );
+                                        }
+                                    );
+
+                                  } else {
+                                    Scaffold.of(context).showSnackBar(SnackBar(
+                                      content: Text("Please wait for the previous transaction to finish first"),
+                                    ));
+                                  }
+                                },
+                              )
+                            ],
                           )
                         ],
-                      )
-                    ],
-                  ),
-                ),
+                      ),
+                    ),
+                  )
+                ]
               );
             });
       } else {
@@ -466,3 +692,4 @@ class _PaymentState extends State<Payment> {
     }
   }
 }
+

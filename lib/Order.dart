@@ -3,10 +3,10 @@ class Order {
   String status;
   double amount;
   String time;
-  int userId;
+  String userId;
   String userName;
 
-  Order(int orderId, String status, double amount, String time, int userId, String userName) {
+  Order(int orderId, String status, double amount, String time, String userId, String userName) {
     this.orderId = orderId;
     this.status = status;
     this.amount = amount;

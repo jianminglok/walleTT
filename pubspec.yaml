@@ -47,6 +47,7 @@ dependencies:
   barcode_scan: 2.0.1
   intl: ^0.15.8
   basic_utils: ^2.4.4
+  dio: ^3.0.9
 
 dev_dependencies:
   flutter_test:

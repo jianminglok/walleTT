@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:math';
 
 import 'package:basic_utils/basic_utils.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
@@ -10,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:walleTT/tabsContainer.dart';
 
 import 'Order.dart';
+import 'OrderInfo.dart';
 import 'barcode_scanner.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,10 +21,10 @@ class Transactions extends StatefulWidget {
 
   @override
   _TransactionsState createState() => _TransactionsState();
+
 }
 
 class _TransactionsState extends State<Transactions> {
-
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
   bool _isLoading = true;
@@ -35,24 +37,38 @@ class _TransactionsState extends State<Transactions> {
 
   Future<List<Order>> _getUsers() async {
     //Get list of users from server
-    var data = await http.get(
-        "https://my-json-server.typicode.com/jianminglok/wallettJson/order");
 
-    var jsonData = json.decode(data.body);
+    var map = new Map<String, dynamic>();
+    map['id'] = 'S001';
+    map['type'] = 'transactionhistory';
 
-    List<Order> users = [];
+    FormData formData = new FormData.fromMap(map);
 
-    for (var i in jsonData) {
-      Order user = Order(
-          int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
-          int.parse(i["user"]["id"]), i["user"]["name"]);
+    try {
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+      print(response);
 
-      users.add(user);
+      var jsonData = json.decode(response.toString());
+
+      print(jsonData);
+
+      List<Order> users = [];
+
+      for (var i in jsonData) {
+        Order user = Order(
+            int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
+            i["user"]["id"], i["user"]["name"]);
+
+        users.add(user);
+      }
+      return users;
+    } catch (e) {
+      print(e);
     }
-    return users;
   }
 
-  Future<List<Order>> _refresh() async { //Refresh list of users from server
+
+  Future<List<Order>> _refreshOrder() async { //Refresh list of users from server
     setState(() {
       _future = _getUsers();
     });
@@ -70,7 +86,8 @@ class _TransactionsState extends State<Transactions> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: new Center(child: Text("Transactions")),
+        centerTitle: true,
+        title: new Text("Transactions"),
         backgroundColor: Theme.of(context).primaryColor,
         elevation: 0.0,
       ),
@@ -97,7 +114,7 @@ class _TransactionsState extends State<Transactions> {
                       child:
                       RefreshIndicator(
                         key: _refreshIndicatorKey,
-                        onRefresh: _refresh,
+                        onRefresh: _refreshOrder,
                         child:
                           ListView.builder(
                           itemCount: snapshot.data.length,
@@ -117,18 +134,20 @@ class _TransactionsState extends State<Transactions> {
                                         onLongPress: () {
                                         },
                                         onTap: () {
-                                          if(snapshot.data[index].status == 'approved') {
-                                            _reverseTransaction(
-                                                snapshot.data[index].time,
-                                                snapshot.data[index].userName,
-                                                snapshot.data[index].userId,
-                                                snapshot.data[index].orderId,
-                                                snapshot.data[index].amount);
-                                          } else if (snapshot.data[index].status == 'reversed') {
-                                              Scaffold.of(context).showSnackBar(SnackBar(
-                                                content: Text("Transaction already reversed"),
-                                              ));
-                                          }
+                                          Navigator.push( //Open QR Scanner
+                                            context,
+                                            MaterialPageRoute(builder: (context) => OrderInfo(),
+                                              settings: RouteSettings(
+                                                arguments: OrderInfoArguments(
+                                                    snapshot.data[index].time,
+                                                    snapshot.data[index].userName,
+                                                    snapshot.data[index].userId,
+                                                    snapshot.data[index].orderId,
+                                                    snapshot.data[index].amount,
+                                                    snapshot.data[index].status),
+                                              ),
+                                            ),
+                                          );
                                         },
                                         child: Padding(
                                           padding: const EdgeInsets.all(15.0),
@@ -139,7 +158,7 @@ class _TransactionsState extends State<Transactions> {
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: <Widget>[
                                                   Text(
-                                                    snapshot.data[index].userName + ' (' + snapshot.data[index].userId.toString() + ')',
+                                                    snapshot.data[index].userName + ' (' + snapshot.data[index].userId + ')',
                                                     style: Theme.of(context).textTheme.subhead,
                                                   ),
                                                   Text(
@@ -156,20 +175,16 @@ class _TransactionsState extends State<Transactions> {
                                                 crossAxisAlignment: CrossAxisAlignment.end,
                                                 children: <Widget>[
                                                   Text(
-                                                    snapshot.data[index].amount.toStringAsFixed(2),
+                                                    'RM ' + snapshot.data[index].amount.toStringAsFixed(2),
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .headline
                                                         .copyWith(fontWeight: FontWeight.bold),
                                                   ),
-                                                  Text(
-                                                    'Balance: RM20.00',
-                                                    style: Theme.of(context).textTheme.subtitle.copyWith(fontSize: 18.0),
-                                                  ),
                                                 ],
                                               ),
                                               Chip(
-                                                backgroundColor: snapshot.data[index].status == 'approved' ? Color(0xff03da9d).withAlpha(30) : Theme.of(context).primaryColor.withAlpha(30),
+                                                backgroundColor: snapshot.data[index].status == 'Approved' ? Color(0xff03da9d).withAlpha(30) : Theme.of(context).primaryColor.withAlpha(30),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.all(
                                                     Radius.circular(8),
@@ -178,7 +193,7 @@ class _TransactionsState extends State<Transactions> {
                                                 label: Text(
                                                   StringUtils.capitalize(snapshot.data[index].status),
                                                   style: TextStyle(color:
-                                                      snapshot.data[index].status == 'approved' ? Color(0xff03da9d) : Theme.of(context).primaryColor),
+                                                      snapshot.data[index].status == 'Approved' ? Color(0xff03da9d) : Theme.of(context).primaryColor),
                                                 ),
                                               ),
                                               Expanded(
@@ -213,143 +228,6 @@ class _TransactionsState extends State<Transactions> {
     );
   }
 
-  void _reverseTransaction(String time, String userName, int userId, int orderId, double amount) {
-    String displayAmount =
-        FlutterMoneyFormatter(amount: amount).output.nonSymbol;
-    showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (context) {
-          return Container(
-            height: 450,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(18),
-                topRight: Radius.circular(18),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(26.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Text(
-                      'Reverse Transaction?',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline
-                          .copyWith(fontWeight: FontWeight.bold)),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Time",
-                          style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.parse(time)),
-                        style: Theme.of(context).textTheme.title,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Name",
-                          style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        userName + ' (' + userId.toString() + ')' ,
-                        style: Theme.of(context).textTheme.title,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "ID",
-                          style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        orderId.toString(),
-                        style: Theme.of(context).textTheme.title,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Amount (RM)",
-                          style: Theme.of(context).textTheme.subhead.copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        displayAmount,
-                        style: TextStyle(fontSize: 60.0, fontWeight: FontWeight.w800),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      FlatButton(
-                        child: Text("Cancel", style: TextStyle(fontSize: 18.0)),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      RaisedButton(
-                        child:
-                        Text("Reverse", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ),
-          );
-        });
-  }
-
   _test(index, context) {
     Navigator.push( //Open QR Scanner
       context,
@@ -360,6 +238,17 @@ class _TransactionsState extends State<Transactions> {
       ),
     );
   }
+}
+
+class OrderInfoArguments {
+  final String time;
+  final String userName;
+  final String userId;
+  final int orderId;
+  final double amount;
+  final String status;
+
+  OrderInfoArguments(this.time, this.userName, this.userId, this.orderId, this.amount, this.status);
 }
 
 class _ItemFetcher {
@@ -380,7 +269,7 @@ class _ItemFetcher {
       if(i < n) {
         Order user = Order(
             int.parse(i["id"]), i["status"], double.parse(i["amount"]),
-            i["time"], int.parse(i["user"]["id"]), i["user"]["name"]);
+            i["time"], i["user"]["id"], i["user"]["name"]);
         users.add(user);
       }
     }
