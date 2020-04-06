@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:walleTT/controllers/tabsController.dart';
 import 'package:walleTT/providers/filterState.dart';
-import 'package:walleTT/widgets/tabsGrid.dart';
 import 'package:walleTT/widgets/tabsInfoHeader.dart';
 
 class TabsContainer extends StatefulWidget {

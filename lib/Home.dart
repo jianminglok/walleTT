@@ -1,12 +1,9 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
 import 'package:walleTT/colors.dart';
 
 import 'Payment.dart';
-import 'Payment2.dart';
 
 class Home extends StatelessWidget {
   // This widget is the root of your application.

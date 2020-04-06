@@ -11,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Order.dart';
 import 'OrderInfo.dart';
-import 'barcode_scanner.dart';
 
 int orderLength;
 Future<List<Order>> _future;

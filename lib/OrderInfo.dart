@@ -11,10 +11,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
 
-import 'Order.dart';
-import 'barcode_scanner.dart';
-import 'package:http/http.dart' as http;
-
 class OrderInfo extends StatefulWidget {
   OrderInfo({Key key}) : super(key: key);
 

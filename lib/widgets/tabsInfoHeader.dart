@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walleTT/providers/filterState.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
-import 'package:walleTT/providers/settingsState.dart';
 
 class TabsInfoHeader extends StatelessWidget {
 
