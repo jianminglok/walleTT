@@ -53,7 +53,7 @@ class _PaymentState extends State<Payment> {
 
   TextEditingController _amountController = TextEditingController();
 
-  Future<String> _verify(formData, paymentData) async {
+  Future<String> _verify(formData, paymentData, balanceData, _amount) async { //Do verification when submitting payment
     try {
       Response response =
           await Dio().post("http://10.0.88.178/process.php", data: formData);
@@ -62,32 +62,58 @@ class _PaymentState extends State<Payment> {
       String loginStatus = jsonData["status"];
       String status;
 
-      if (loginStatus == 'store') {
+      if (loginStatus == 'store') { //If verification successful
         try {
           Response response = await Dio()
-              .post("http://10.0.88.178/process.php", data: paymentData);
+              .post("http://10.0.88.178/process.php", data: balanceData);
           var jsonData = json.decode(response.toString());
 
-          String paymentStatus = jsonData["status"];
+          int balance = jsonData["balance"];
+          String remark = jsonData["remark"];
 
-          //Transactions().checkOrderLength();
+          if(jsonData["status"] != 'User does not exist!') { //If user from scanned QR code exist
+            if (remark == 'active') { //If user account is active and not frozen
+              if (balance - int.parse(_amount) >= 0) { //If user has enough balance
+                try {
+                  Response response = await Dio()
+                      .post("http://10.0.88.178/process.php", data: paymentData);
+                  var jsonData = json.decode(response.toString());
 
-          if (paymentStatus == 'successful') {
-            setState(() {
-              totalAmount = 0;
-              for (var i = 0; i < quantities.length; i++) {
-                quantitiesString[i] = '0';
-                quantities[i] = 0;
-                _amountController.text = '0';
+                  String paymentStatus = jsonData["status"];
+
+                  //Transactions().checkOrderLength();
+
+                  if (paymentStatus == 'successful') {
+                    setState(() {
+                      totalAmount = 0;
+                      for (var i = 0; i < quantities.length; i++) {
+                        quantitiesString[i] = '0';
+                        quantities[i] = 0;
+                        _amountController.text = '0';
+                      }
+
+                      setState(() {
+                        _sharedStrings = _refreshStoreInfo();
+                      });
+                    });
+                  }
+
+                  status = paymentStatus;
+                } catch (e) {
+                  print(e);
+                }
+              } else {
+                status = 'User does not have enough balance!';
               }
-
-              setState(() {
-                _sharedStrings = _refreshStoreInfo();
-              });
-            });
+            } else if (remark == 'frozen') {
+              status = 'User account has been frozen. Please contact administrator immediately.';
+            } else {
+              status = 'User account is not active!';
+            }
+          } else {
+            status = jsonData['status'];
           }
 
-          status = paymentStatus;
         } catch (e) {
           print(e);
         }
@@ -100,7 +126,7 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<Product>> _getProducts() async {
+  Future<List<Product>> _getProducts() async { //Get list of products
     var loginMap = new Map<String, dynamic>();
     loginMap['STORE'] = storeId; //Change to storeId later
     loginMap['PASS'] = storeSecret; //Change to storeSecret later
@@ -155,7 +181,7 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<Product>> _refresh() async {
+  Future<List<Product>> _refresh() async { //Refresh product list
     //Refresh list of users from server
     setState(() {
       totalAmount = 0;
@@ -168,7 +194,7 @@ class _PaymentState extends State<Payment> {
     });
   }
 
-  Future<List<String>> _getUserData() async {
+  Future<List<String>> _getUserData() async { //Get store id etc
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     storeId = prefs.getString('id');
@@ -181,7 +207,7 @@ class _PaymentState extends State<Payment> {
     });
   }
 
-  Future<List<String>> _getStoreInfo() async {
+  Future<List<String>> _getStoreInfo() async { //Get store balance and name
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var loginMap = new Map<String, dynamic>();
@@ -211,7 +237,7 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<String>> _refreshStoreInfo() async {
+  Future<List<String>> _refreshStoreInfo() async { //Refresh store balance and name after payment complete
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var loginMap = new Map<String, dynamic>();
@@ -278,7 +304,7 @@ class _PaymentState extends State<Payment> {
             child: IconButton(
               color: Colors.white,
               icon: Icon(Icons.exit_to_app),
-              onPressed: () async {
+              onPressed: () async { //Logout
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.remove('id');
                 prefs.remove('name');
@@ -287,15 +313,6 @@ class _PaymentState extends State<Payment> {
                 Navigator.pushReplacement(context,
                     MaterialPageRoute(builder: (BuildContext ctx) => Login()));
               },
-            ),
-          ),
-          Positioned(
-            top: 30,
-            right: 5,
-            child: IconButton(
-              color: Colors.white,
-              icon: Icon(Icons.settings),
-              onPressed: () {},
             ),
           ),
           Column(
@@ -500,7 +517,7 @@ class _PaymentState extends State<Payment> {
     );
   }
 
-  static Future<String> scan(BuildContext context) async {
+  static Future<String> scan(BuildContext context) async { //Scan QR code
     try {
       return await BarcodeScanner.scan();
     } catch (e) {
@@ -516,7 +533,7 @@ class _PaymentState extends State<Payment> {
   }
 
   void _scan(
-      String _amount, quantities, products, names, BuildContext context) async {
+      String _amount, quantities, products, names, BuildContext context) async { //Show dialog after scan complete
     final idList = [];
     final quantitiesList = [];
     final nameList = [];
@@ -724,9 +741,18 @@ class _PaymentState extends State<Payment> {
                                 FormData loginData =
                                     new FormData.fromMap(loginMap);
 
+                                var balanceMap = new Map<String, dynamic>();
+                                balanceMap['id'] =
+                                    id;
+                                balanceMap['type'] = 'checkbalance';
+
+                                FormData balanceData =
+                                new FormData.fromMap(balanceMap);
+
+
                                 if (makingPayment == false) {
                                   _verifyResult =
-                                      _verify(loginData, paymentData);
+                                      _verify(loginData, paymentData, balanceData, _amount);
                                   Navigator.pop(context);
 
                                   showModalBottomSheet(
@@ -795,6 +821,7 @@ class _PaymentState extends State<Payment> {
                                                                                   child: Text(
                                                                                     'Successful',
                                                                                     style: Theme.of(context).textTheme.title,
+                                                                                    textAlign: TextAlign.center,
                                                                                   ),
                                                                                 ),
                                                                                 Padding(
@@ -831,6 +858,7 @@ class _PaymentState extends State<Payment> {
                                                                                   child: Text(
                                                                                     snapshot.data.toString(),
                                                                                     style: Theme.of(context).textTheme.title,
+                                                                                    textAlign: TextAlign.center,
                                                                                   ),
                                                                                 ),
                                                                                 Padding(

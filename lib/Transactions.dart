@@ -6,16 +6,12 @@ import 'package:basic_utils/basic_utils.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walleTT/tabsContainer.dart';
 
 import 'Order.dart';
 import 'OrderInfo.dart';
 import 'barcode_scanner.dart';
-import 'package:http/http.dart' as http;
 
 int orderLength;
 Future<List<Order>> _future;
@@ -44,7 +40,7 @@ class _TransactionsState extends State<Transactions> {
   @override
   bool get wantKeepAlive => true;
 
-  Future<List<Order>> _verify() async {
+  Future<List<Order>> _verify() async { //Do verification before getting list of transactions
 
     var loginMap = new Map<String, dynamic>();
     loginMap['STORE'] = storeId; //Change to storeId later
@@ -60,7 +56,7 @@ class _TransactionsState extends State<Transactions> {
       String loginStatus = jsonData["status"];
       String status;
 
-      if(loginStatus == 'store') {
+      if(loginStatus == 'store') { //If verification is successful
         var map = new Map<String, dynamic>();
         map['id'] = storeId; //change to storeId later
         map['type'] = 'transactionhistory';
@@ -97,13 +93,13 @@ class _TransactionsState extends State<Transactions> {
     }
   }
 
-  Future<List<Order>> refreshOrder() async { //Refresh list of users from server
+  Future<List<Order>> refreshOrder() async { //Refresh list of transactions from server
     setState(() {
       _future = _verify();
     });
   }
 
-  Future<void> _getUserData() async {
+  Future<void> _getUserData() async { //Get store id, name etc
     WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     storeId = prefs.getString('id');
@@ -269,17 +265,6 @@ class _TransactionsState extends State<Transactions> {
               ),
             ],
           )
-    );
-  }
-
-  _test(index, context) {
-    Navigator.push( //Open QR Scanner
-      context,
-      MaterialPageRoute(builder: (context) => BarcodeScanner(),
-        settings: RouteSettings(
-          arguments: index,
-        ),
-      ),
     );
   }
 }

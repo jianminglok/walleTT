@@ -33,7 +33,7 @@ class _OrderInfoState extends State<OrderInfo> {
   var storeStatus;
   var storeSecret;
 
-  Future<bool> _verify() async {
+  Future<bool> _verify() async { //Do verification before getting order info
 
     var loginMap = new Map<String, dynamic>();
     loginMap['STORE'] = storeId; //Change to storeId later
@@ -49,7 +49,7 @@ class _OrderInfoState extends State<OrderInfo> {
       String loginStatus = jsonData["status"];
       String status;
 
-      if(loginStatus == 'store') {
+      if(loginStatus == 'store') { //If verification is successful get list of products
         var map = new Map<String, dynamic>();
         map['id'] = 'S001';
         map['type'] = 'products';
@@ -328,129 +328,5 @@ class _OrderInfoState extends State<OrderInfo> {
             ]
         )
         );
-  }
-
-  void _reverseTransaction(
-      String time, String userName, String userId, int orderId, double amount) {
-    String displayAmount =
-        FlutterMoneyFormatter(amount: amount).output.nonSymbol;
-    showModalBottomSheet(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (context) {
-          return Container(
-            height: 450,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(18),
-                topRight: Radius.circular(18),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(26.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Text('Order ' + orderId.toString(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline
-                          .copyWith(fontWeight: FontWeight.bold)),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Time",
-                          style: Theme.of(context)
-                              .textTheme
-                              .subhead
-                              .copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        DateFormat('yyyy-MM-dd HH:mm:ss')
-                            .format(DateTime.parse(time)),
-                        style: Theme.of(context).textTheme.title,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Name",
-                          style: Theme.of(context)
-                              .textTheme
-                              .subhead
-                              .copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        userName + ' (' + userId + ')',
-                        style: Theme.of(context).textTheme.title,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Products",
-                          style: Theme.of(context)
-                              .textTheme
-                              .subhead
-                              .copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 24.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          "Amount (RM)",
-                          style: Theme.of(context)
-                              .textTheme
-                              .subhead
-                              .copyWith(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        displayAmount,
-                        style: TextStyle(
-                            fontSize: 40.0, fontWeight: FontWeight.w800),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          );
-        });
   }
 }

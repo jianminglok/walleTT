@@ -107,7 +107,7 @@ class _LoginState extends State<LoginPage> {
           loading = false;
         });
 
-        if(loginStatus.isNotEmpty) {
+        if(loginStatus.isNotEmpty) { //If response received from server
           switch(loginStatus) {
             case "Server error":
               errorMessage = "Server error";
@@ -118,7 +118,7 @@ class _LoginState extends State<LoginPage> {
             case "User does not exist":
               errorMessage = "User does not exist";
               break;
-            case "store":
+            case "store": //Save user data and go to Home
               SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.setString('id', _userController.text);
               prefs.setString('secret', _passwordController.text);

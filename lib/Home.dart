@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  Widget _bottomNavigationBar(int selectedIndex) => BottomNavigationBar(
+  Widget _bottomNavigationBar(int selectedIndex) => BottomNavigationBar( //Switch between page
     onTap: (int index) => setState(() => _selectedIndex = index),
     currentIndex: selectedIndex,
     items: const <BottomNavigationBarItem>[

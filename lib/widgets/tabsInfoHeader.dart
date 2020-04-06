@@ -53,7 +53,7 @@ class TabsInfoHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
           Text(
-            "$name's Current Balance",
+            "$name's Total Revenue",
             style: TextStyle(fontWeight: FontWeight.w500, color: Colors.white, fontFamily: 'Rubik'),
           ),
           SizedBox(
