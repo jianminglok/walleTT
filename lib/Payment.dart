@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
@@ -305,13 +307,7 @@ class _PaymentState extends State<Payment> {
               color: Colors.white,
               icon: Icon(Icons.exit_to_app),
               onPressed: () async { //Logout
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.remove('id');
-                prefs.remove('name');
-                prefs.remove('status');
-                prefs.remove('secret');
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (BuildContext ctx) => Login()));
+                _showLogoutDialog(context);
               },
             ),
           ),
@@ -909,5 +905,65 @@ class _PaymentState extends State<Payment> {
         content: Text("Amount must be larger than 0!"),
       ));
     }
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        if (Platform.isIOS) {
+          return CupertinoAlertDialog(
+            title: Text("Confirm logout?"),
+            content: Text(
+                "You can only perform transactions after you have logged in"),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text("Logout"),
+                onPressed: () {
+
+                },
+              ),
+            ],
+          );
+        } else
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8)),
+            title: Text("Confirm logout?"),
+            content: Text(
+                "You can only perform transactions after you have logged in"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Cancel"),
+                textColor: Colors.black87,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("Logout"),
+                textColor: Colors.red,
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences
+                      .getInstance();
+                  prefs.remove('id');
+                  prefs.remove('name');
+                  prefs.remove('status');
+                  prefs.remove('secret');
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(
+                          builder: (BuildContext ctx) => Login()));
+                },
+              ),
+            ],
+          );
+      },
+    );
   }
 }
