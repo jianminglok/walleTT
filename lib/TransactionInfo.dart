@@ -107,7 +107,7 @@ class _OrderInfoState extends State<OrderInfo> {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: new Text("Order Info"),
+          title: new Text("Transaction Info"),
           backgroundColor: Theme.of(context).primaryColor,
           elevation: 0.0,
         ),
@@ -142,7 +142,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
                                     mainAxisSize: MainAxisSize.max,
                                     children: <Widget>[
-                                      Text('Order ID: ' + args.orderId.toString(),
+                                      Text('Transaction ID: ' + args.topupId.toString(),
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline
@@ -207,14 +207,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                           MainAxisAlignment.spaceBetween,
                                           children: <Widget>[
                                             Text(
-                                              "Products",
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .subhead
-                                                  .copyWith(color: Colors.black54),
-                                            ),
-                                            Text(
-                                              "Quantity",
+                                              "Type",
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .subhead
@@ -227,38 +220,38 @@ class _OrderInfoState extends State<OrderInfo> {
                                         mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                         children: <Widget>[
-                                          Expanded(
-                                              child: ListView.builder(
-                                                  shrinkWrap: true,
-                                                  itemCount: args.products.length,
-                                                  itemBuilder: (BuildContext context,
-                                                      int index) {
-                                                    return Row(
-                                                      mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                      children: <Widget>[
-                                                        Text(
-                                                          productsNameList[
-                                                          productsList.indexOf(args
-                                                              .products[index])],
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .title,
-                                                        ),
-                                                        Text(
-                                                          args.quantities[index]
-                                                              .toString(),
-                                                          style: Theme.of(context)
-                                                              .textTheme
-                                                              .title,
-                                                        ),
-                                                      ],
-                                                    );
-                                                  }))
+                                          Text(
+                                            StringUtils.capitalize(args.remark),
+                                            style: Theme.of(context).textTheme.title,
+                                          ),
                                         ],
                                       ),
-
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 24.0),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Text(
+                                              "Status",
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .subhead
+                                                  .copyWith(color: Colors.black54),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                        children: <Widget>[
+                                          Text(
+                                            StringUtils.capitalize(args.cleared),
+                                            style: Theme.of(context).textTheme.title,
+                                          ),
+                                        ],
+                                      ),
                                       Padding(
                                         padding: const EdgeInsets.only(top: 24.0),
                                         child: Row(

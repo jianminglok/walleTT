@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:walleTT/Transactions.dart';
 import 'package:walleTT/colors.dart';
 
-import 'Payment.dart';
+import 'Balance.dart';
+import 'Topup.dart';
 
 class Home extends StatelessWidget {
   // This widget is the root of your application.
@@ -89,6 +90,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     pageList.add(Payment());
+    pageList.add(Balance());
     pageList.add(Transactions());
     super.initState();
   }
@@ -98,7 +100,9 @@ class _HomePageState extends State<HomePage> {
     currentIndex: selectedIndex,
     items: const <BottomNavigationBarItem>[
       BottomNavigationBarItem(
-          icon: Icon(Icons.add), title: Text('Payment')), //Payment Page
+          icon: Icon(Icons.add), title: Text('Topup')),
+      BottomNavigationBarItem(
+          icon: Icon(Icons.center_focus_strong), title: Text('Check Balance')),//Payment Page
       BottomNavigationBarItem(
           icon: Icon(Icons.list), title: Text('Transactions')), //Transactions Record Page
     ],

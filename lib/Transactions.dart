@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'Order.dart';
-import 'OrderInfo.dart';
+import 'Transaction.dart';
+import 'TransactionInfo.dart';
 
 int orderLength;
-Future<List<Order>> _future;
+Future<List<Transaction>> _future;
 
 class Transactions extends StatefulWidget {
 
@@ -31,51 +31,47 @@ class Transactions extends StatefulWidget {
 class _TransactionsState extends State<Transactions> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
-  var storeId;
-  var storeName;
-  var storeStatus;
-  var storeSecret;
+  var agentId;
+  var agentName;
+  var agentSecret;
 
   @override
   bool get wantKeepAlive => true;
 
-  Future<List<Order>> _verify() async { //Do verification before getting list of transactions
+  Future<List<Transaction>> _verify() async { //Do verification before getting list of transactions
 
     var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
-    loginMap['type'] = 'login';
+    loginMap['USER'] = agentId; //Change to storeId later
+    loginMap['PASS'] = agentSecret; //Change to storeSecret later
+    loginMap['type'] = 'topuphistory';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
+      Response response = await Dio().post("http://10.0.88.178/verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
       String status;
 
-      if(loginStatus == 'store') { //If verification is successful
+      if(loginStatus == 'ok') { //If verification is successful
         var map = new Map<String, dynamic>();
-        map['id'] = storeId; //change to storeId later
-        map['type'] = 'transactionhistory';
+        map['id'] = agentId; //change to storeId later
+        map['type'] = 'topuphistory';
 
         FormData formData = new FormData.fromMap(map);
 
         try {
           Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
-          print(response);
 
           var jsonData = json.decode(response.toString());
 
-          print(jsonData);
-
-          List<Order> users = [];
+          List<Transaction> users = [];
 
           for (var i in jsonData) {
-            Order user = Order(
-                int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
-                i["user"]["id"], i["user"]["name"], i["products"], i["amounts"]);
+            Transaction user = Transaction(
+                int.parse(i["id"]), double.parse(i["amount"]), i["time"],
+                i["user"]["id"], i["user"]["name"], i["remark"], i["cleared"]);
 
             users.add(user);
           }
@@ -92,7 +88,7 @@ class _TransactionsState extends State<Transactions> {
     }
   }
 
-  Future<List<Order>> refreshOrder() async { //Refresh list of transactions from server
+  Future<List<Transaction>> refreshOrder() async { //Refresh list of transactions from server
     setState(() {
       _future = _verify();
     });
@@ -101,10 +97,9 @@ class _TransactionsState extends State<Transactions> {
   Future<void> _getUserData() async { //Get store id, name etc
     WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    storeId = prefs.getString('id');
-    storeName = prefs.getString('name');
-    storeStatus = prefs.getString('status');
-    storeSecret = prefs.getString('secret');
+    agentId = prefs.getString('id');
+    agentName = prefs.getString('name');
+    agentSecret = prefs.getString('secret');
 
     setState(() {
       _future = _verify();
@@ -130,7 +125,7 @@ class _TransactionsState extends State<Transactions> {
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              FutureBuilder<List<Order>>(
+              FutureBuilder<List<Transaction>>(
               future: _future,
               builder: (context, snapshot) {
               switch (snapshot.connectionState) {
@@ -179,11 +174,10 @@ class _TransactionsState extends State<Transactions> {
                                                     snapshot.data[index].time,
                                                     snapshot.data[index].userName,
                                                     snapshot.data[index].userId,
-                                                    snapshot.data[index].orderId,
+                                                    snapshot.data[index].topupId,
                                                     snapshot.data[index].amount,
-                                                    snapshot.data[index].status,
-                                                    snapshot.data[index].products,
-                                                    snapshot.data[index].quantities),
+                                                    snapshot.data[index].remark,
+                                                    snapshot.data[index].cleared),
                                               ),
                                             ),
                                           );
@@ -201,7 +195,7 @@ class _TransactionsState extends State<Transactions> {
                                                     style: Theme.of(context).textTheme.subhead,
                                                   ),
                                                   Text(
-                                                    'Order ID: ' + snapshot.data[index].orderId.toString(),
+                                                    'Transaction ID: ' + snapshot.data[index].topupId.toString(),
                                                     style: Theme.of(context).textTheme.subhead,
                                                   ),
                                                 ],
@@ -220,19 +214,23 @@ class _TransactionsState extends State<Transactions> {
                                                         .headline
                                                         .copyWith(fontWeight: FontWeight.bold),
                                                   ),
+                                                  Text(
+                                                    StringUtils.capitalize(snapshot.data[index].remark),
+                                                    style: Theme.of(context).textTheme.subtitle,
+                                                  ),
                                                 ],
                                               ),
                                               Chip(
-                                                backgroundColor: snapshot.data[index].status == 'Approved' ? Color(0xff03da9d).withAlpha(30) : Theme.of(context).primaryColor.withAlpha(30),
+                                                backgroundColor: snapshot.data[index].cleared == 'cleared' ? Color(0xff03da9d).withAlpha(30) : Theme.of(context).primaryColor.withAlpha(30),
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.all(
                                                     Radius.circular(8),
                                                   ),
                                                 ),
                                                 label: Text(
-                                                  StringUtils.capitalize(snapshot.data[index].status),
+                                                  StringUtils.capitalize(snapshot.data[index].cleared),
                                                   style: TextStyle(color:
-                                                      snapshot.data[index].status == 'Approved' ? Color(0xff03da9d) : Theme.of(context).primaryColor),
+                                                      snapshot.data[index].cleared == 'cleared' ? Color(0xff03da9d) : Theme.of(context).primaryColor),
                                                 ),
                                               ),
                                               Expanded(
@@ -272,11 +270,10 @@ class OrderInfoArguments {
   final String time;
   final String userName;
   final String userId;
-  final int orderId;
+  final int topupId;
   final double amount;
-  final String status;
-  final products;
-  final quantities;
+  final String remark;
+  final String cleared;
 
-  OrderInfoArguments(this.time, this.userName, this.userId, this.orderId, this.amount, this.status, this.products, this.quantities);
+  OrderInfoArguments(this.time, this.userName, this.userId, this.topupId, this.amount, this.remark, this.cleared);
 }

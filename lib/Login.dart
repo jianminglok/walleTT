@@ -90,13 +90,13 @@ class _LoginState extends State<LoginPage> {
         });
 
         var loginMap = new Map<String, dynamic>();
-        loginMap['STORE'] = _userController.text;
+        loginMap['USER'] = _userController.text;
         loginMap['PASS'] = _passwordController.text;
         loginMap['type'] = 'login';
 
         FormData loginData = new FormData.fromMap(loginMap);
 
-        Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
+        Response response = await Dio().post("http://10.0.88.178/verify.php", data: loginData);
         var jsonData = json.decode(response.toString());
 
         String loginStatus = jsonData["status"];
@@ -118,7 +118,7 @@ class _LoginState extends State<LoginPage> {
             case "User does not exist":
               errorMessage = "User does not exist";
               break;
-            case "store": //Save user data and go to Home
+            case "agent": //Save user data and go to Home
               SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.setString('id', _userController.text);
               prefs.setString('secret', _passwordController.text);

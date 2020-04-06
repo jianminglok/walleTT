@@ -40,80 +40,63 @@ class _PaymentState extends State<Payment> {
   Future<String> _paymentResult;
   Future<String> _verifyResult;
 
-  var quantities = [];
-  var quantitiesString = [];
-  var productsList = [];
-  var productsNameList = [];
-
-  var storeId;
-  var storeName;
-  var storeStatus;
-  var storeSecret;
-  var storeBalance;
+  var agentId;
+  var agentName;
+  var agentSecret;
+  var agentBalance;
 
   TextEditingController _amountController = TextEditingController();
 
-  Future<String> _verify(formData, paymentData, balanceData, _amount) async { //Do verification when submitting payment
+  Future<String> _verify(formData, topupData, balanceData, _amount) async {
+    //Do verification when submitting payment
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: formData);
+          await Dio().post("http://10.0.88.178/verify.php", data: formData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
       String status;
 
-      if (loginStatus == 'store') { //If verification successful
+      if (loginStatus == 'ok') {
+        //If verification successful
         try {
           Response response = await Dio()
               .post("http://10.0.88.178/process.php", data: balanceData);
           var jsonData = json.decode(response.toString());
 
-          int balance = jsonData["balance"];
           String remark = jsonData["remark"];
 
-          if(jsonData["status"] != 'User does not exist!') { //If user from scanned QR code exist
-            if (remark == 'active') { //If user account is active and not frozen
-              if (balance - int.parse(_amount) >= 0) { //If user has enough balance
-                try {
-                  Response response = await Dio()
-                      .post("http://10.0.88.178/process.php", data: paymentData);
-                  var jsonData = json.decode(response.toString());
+          //If user account is active and not frozen
+          if (remark == 'active') {
+            //If user has enough balance
+            try {
+              Response response = await Dio()
+                  .post("http://10.0.88.178/process.php", data: topupData);
+              var jsonData = json.decode(response.toString());
 
-                  String paymentStatus = jsonData["status"];
+              String topupStatus = jsonData["status"];
 
-                  //Transactions().checkOrderLength();
+              //Transactions().checkOrderLength();
 
-                  if (paymentStatus == 'successful') {
-                    setState(() {
-                      totalAmount = 0;
-                      for (var i = 0; i < quantities.length; i++) {
-                        quantitiesString[i] = '0';
-                        quantities[i] = 0;
-                        _amountController.text = '0';
-                      }
+              if (topupStatus == 'successful') {
+                setState(() {
+                  _amountController.text = '0';
 
-                      setState(() {
-                        _sharedStrings = _refreshStoreInfo();
-                      });
-                    });
-                  }
-
-                  status = paymentStatus;
-                } catch (e) {
-                  print(e);
-                }
-              } else {
-                status = 'User does not have enough balance!';
+                  setState(() {
+                    _sharedStrings = _refreshBalance();
+                  });
+                });
               }
-            } else if (remark == 'frozen') {
-              status = 'User account has been frozen. Please contact administrator immediately.';
-            } else {
-              status = 'User account is not active!';
+
+              status = topupStatus;
+            } catch (e) {
+              print(e);
             }
+          } else if  (remark == 'frozen') {
+            status = 'Account is frozen. Please contact administrator immediately.';
           } else {
             status = jsonData['status'];
           }
-
         } catch (e) {
           print(e);
         }
@@ -126,110 +109,97 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<Product>> _getProducts() async { //Get list of products
-    var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
-    loginMap['type'] = 'login';
+  var _list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0];
 
-    FormData loginData = new FormData.fromMap(loginMap);
-
-    try {
-      Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: loginData);
-      var jsonData = json.decode(response.toString());
-
-      String loginStatus = jsonData["status"];
-      String status;
-
-      if (loginStatus == 'store') {
-        var map = new Map<String, dynamic>();
-        map['id'] = storeId; //change to storeId later
-        map['type'] = 'products';
-
-        FormData formData = new FormData.fromMap(map);
-
-        try {
-          Response response = await Dio()
-              .post("http://10.0.88.178/process.php", data: formData);
-
-          var jsonData = json.decode(response.toString());
-
-          List<Product> products = [];
-
-          for (var i in jsonData) {
-            Product product =
-                Product(i["id"], i["name"], double.parse(i["price"]));
-
-            products.add(product);
-
-            quantities.add(0);
-            quantitiesString.add("0");
-            productsNameList.add(i["name"]);
-            productsList.add(i["id"]);
+  Widget _buildButton(int index) {
+    return Material(
+      color: Colors.grey[50],
+      child: InkWell(
+        child: Center(
+          child: index == 11
+              ? Icon(Icons.backspace)
+              : index == 9
+                  ? Semantics()
+                  : Text(_list[index].toString(),
+                      style: TextStyle(fontSize: 26.0)),
+        ),
+        onLongPress: () {
+          if (index == 11) {
+            if (_amountController.text.length == 0) {
+              return;
+            } else {
+              _amountController.text = _amountController.text.substring(
+                  0,
+                  _amountController.text.length -
+                      _amountController.text.length);
+            }
           }
-
-          return products;
-        } catch (e) {
-          print(e);
-        }
-      } else {
-        status = loginStatus;
-      }
-    } catch (e) {
-      print(e);
-    }
+        },
+        onTap: () {
+          if (index == 9) {
+            return;
+          } else if (index == 11) {
+            if (_amountController.text.length == 0) {
+              return;
+            } else {
+              _amountController.text = _amountController.text
+                  .substring(0, _amountController.text.length - 1);
+            }
+          } else {
+            if (_amountController.text.length == 0) {
+              if (index == 10) {
+                return;
+              } else {
+                _amountController.text = _amountController.text == ''
+                    ? _list[index].toString()
+                    : _amountController.text + _list[index].toString();
+              }
+            } else {
+              _amountController.text = _amountController.text == ''
+                  ? _list[index].toString()
+                  : _amountController.text + _list[index].toString();
+            }
+          }
+          setState(() {});
+        },
+      ),
+    );
   }
 
-  Future<List<Product>> _refresh() async { //Refresh product list
-    //Refresh list of users from server
-    setState(() {
-      totalAmount = 0;
-      for (var i = 0; i < quantities.length; i++) {
-        quantitiesString[i] = '0';
-        quantities[i] = 0;
-        _amountController.text = '0';
-      }
-      _future = _getProducts();
-    });
-  }
-
-  Future<List<String>> _getUserData() async { //Get store id etc
+  Future<List<String>> _getUserData() async {
+    //Get store id etc
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    storeId = prefs.getString('id');
-    storeStatus = prefs.getString('status');
-    storeSecret = prefs.getString('secret');
+    agentId = prefs.getString('id');
+    agentSecret = prefs.getString('secret');
 
     setState(() {
       _sharedStrings = _getStoreInfo();
-      _future = _getProducts();
     });
   }
 
-  Future<List<String>> _getStoreInfo() async { //Get store balance and name
+  Future<List<String>> _getStoreInfo() async {
+    //Get store balance and name
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['USER'] = agentId; //Change to storeId later
+    loginMap['PASS'] = agentSecret; //Change to storeSecret later
     loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: loginData);
+          await Dio().post("http://10.0.88.178/verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       List<String> strings = [];
-      storeName = prefs.getString('name');
-      storeBalance = jsonData['balance'].toString();
+      agentName = prefs.getString('name');
+      agentBalance = jsonData['balance'].toString();
 
-      strings.add(storeName);
-      strings.add(storeBalance);
-
-      prefs.setString('balance', storeBalance);
+      strings.add(agentName);
+      strings.add(agentBalance);
 
       return strings;
     } catch (e) {
@@ -237,29 +207,28 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<String>> _refreshStoreInfo() async { //Refresh store balance and name after payment complete
+  Future<List<String>> _refreshBalance() async {
+    //Refresh store balance and name after payment complete
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['USER'] = agentId; //Change to storeId later
+    loginMap['PASS'] = agentSecret; //Change to storeSecret later
     loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: loginData);
+          await Dio().post("http://10.0.88.178/verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       List<String> strings = [];
-      storeName = prefs.getString('name');
-      storeBalance = jsonData['balance'].toString();
+      agentName = prefs.getString('name');
+      agentBalance = jsonData['balance'].toString();
 
-      strings.add(storeName);
-      strings.add(storeBalance);
-
-      prefs.setString('balance', storeBalance);
+      strings.add(agentName);
+      strings.add(agentBalance);
 
       return strings;
     } catch (e) {
@@ -304,7 +273,8 @@ class _PaymentState extends State<Payment> {
             child: IconButton(
               color: Colors.white,
               icon: Icon(Icons.exit_to_app),
-              onPressed: () async { //Logout
+              onPressed: () async {
+                //Logout
                 SharedPreferences prefs = await SharedPreferences.getInstance();
                 prefs.remove('id');
                 prefs.remove('name');
@@ -324,7 +294,6 @@ class _PaymentState extends State<Payment> {
                   child: FutureBuilder<List<String>>(
                       future: _sharedStrings,
                       builder: (context, snapshot) {
-                        print(snapshot);
                         switch (snapshot.connectionState) {
                           case ConnectionState.none:
                           case ConnectionState.waiting:
@@ -337,187 +306,164 @@ class _PaymentState extends State<Payment> {
                       }),
                 ),
               ),
-              Expanded(
-                child: Container(
-                    margin: EdgeInsets.only(top: 40.0),
-                    padding: EdgeInsets.symmetric(horizontal: 20.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(bottom: 10.0),
-                          child: Text('How much?',
-                              style: TextStyle(
-                                  fontSize: 40.0, fontWeight: FontWeight.w700)),
+              Container(
+                  margin: EdgeInsets.only(top: 22.5),
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(bottom: 10.0),
+                        child: Text('How much?',
+                            style: TextStyle(
+                                fontSize: 40.0, fontWeight: FontWeight.w700)),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(bottom: 20.0),
+                        child: Row(
+                          children: <Widget>[
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ActionChip(
+                                label: Text('5'),
+                                backgroundColor: Colors.white,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _amountController.text = '5';
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ActionChip(
+                                label: Text('10'),
+                                backgroundColor: Colors.white,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _amountController.text = '10';
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ActionChip(
+                                label: Text('20'),
+                                backgroundColor: Colors.white,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _amountController.text = '20';
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ActionChip(
+                                label: Text('50'),
+                                backgroundColor: Colors.white,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _amountController.text = '50';
+                                },
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ActionChip(
+                                label: Text('100'),
+                                backgroundColor: Colors.white,
+                                elevation: 1,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _amountController.text = '100';
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                              contentPadding: EdgeInsets.all(12),
-                              prefixIcon: Padding(
-                                  padding: EdgeInsets.all(15),
-                                  child: Text('RM'))),
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.w600),
-                          controller: _amountController,
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
+                      ),
+                      TextField(
+                        enabled: false,
+                        decoration: InputDecoration(
+                            contentPadding: EdgeInsets.all(12),
+                            prefixIcon: Padding(
+                                padding: EdgeInsets.all(15),
+                                child: Text('RM'))),
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.w600),
+                        controller: _amountController,
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
-                        FutureBuilder<List<Product>>(
-                            future: _future,
-                            builder: (context, snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.none:
-                                case ConnectionState
-                                    .waiting: //Display progress circle while loading
-                                  return Expanded(
-                                    child: Container(
-                                      child: Center(
-                                          child: SpinKitDoubleBounce(
-                                        color: Theme.of(context).primaryColor,
-                                        size: 50.0,
-                                      )),
-                                    ),
-                                  );
-                                default: //Display card when loaded
-                                  return Expanded(
-                                      child: Container(
-                                          child: RefreshIndicator(
-                                              key: _refreshIndicatorKey,
-                                              onRefresh: _refresh,
-                                              child: ListView.builder(
-                                                  itemCount:
-                                                      snapshot.data.length,
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                              int index) =>
-                                                          Container(
-                                                              child: Container(
-                                                            padding: EdgeInsets
-                                                                .fromLTRB(
-                                                                    0,
-                                                                    1.25,
-                                                                    0,
-                                                                    1.25),
-                                                            child: SizedBox(
-                                                                width: double
-                                                                    .infinity,
-                                                                child: Card(
-                                                                  shape:
-                                                                      RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            18),
-                                                                  ),
-                                                                  child:
-                                                                      InkWell(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            18),
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
-                                                                              .all(
-                                                                          15.0),
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.center,
-                                                                        children: <
-                                                                            Widget>[
-                                                                          Expanded(
-                                                                            child:
-                                                                                (Column(
-                                                                              children: <Widget>[
-                                                                                ListTile(
-                                                                                    title: Text(
-                                                                                      snapshot.data[index].name,
-                                                                                      style: Theme.of(context).textTheme.title,
-                                                                                    ),
-                                                                                    subtitle: Container(
-                                                                                      padding: EdgeInsets.only(top: 10.0),
-                                                                                      child: Text(
-                                                                                        'RM ' + FlutterMoneyFormatter(amount: snapshot.data[index].price).output.nonSymbol,
-                                                                                        style: Theme.of(context).textTheme.subhead,
-                                                                                      ),
-                                                                                    )),
-                                                                              ],
-                                                                            )),
-                                                                          ),
-                                                                          Expanded(
-                                                                            child:
-                                                                                (Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.center, children: [
-                                                                              SizedBox(
-                                                                                width: 30.0,
-                                                                                child: (FlatButton(
-                                                                                  child: const Text('-', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w200)),
-                                                                                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                                                                  onPressed: () {
-                                                                                    setState(() {
-                                                                                      if (quantities[index] - 1 >= 0) {
-                                                                                        quantities[index] -= 1;
-                                                                                        totalAmount = totalAmount - snapshot.data[index].price.toInt();
-                                                                                        quantitiesString[index] = quantities[index].toString();
-                                                                                        _amountController.text = totalAmount.toString();
-                                                                                      } else {
-                                                                                        Scaffold.of(context).showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
-                                                                                      }
-                                                                                    });
-                                                                                  },
-                                                                                )),
-                                                                              ),
-                                                                              Text(
-                                                                                quantitiesString[index],
-                                                                                style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.w400),
-                                                                              ),
-                                                                              SizedBox(
-                                                                                  width: 30.0,
-                                                                                  child: (FlatButton(
-                                                                                    child: const Text('+', style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w300)),
-                                                                                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                                                                    onPressed: () {
-                                                                                      setState(() {
-                                                                                        quantities[index] += 1;
-                                                                                        totalAmount = totalAmount + snapshot.data[index].price.toInt();
-                                                                                        quantitiesString[index] = quantities[index].toString();
-                                                                                        _amountController.text = totalAmount.toString();
-                                                                                      });
-                                                                                    },
-                                                                                  ))),
-                                                                            ])),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                )),
-                                                          ))))));
-                              }
-                            }),
-                      ],
-                    )),
-              )
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top: 1.0, bottom: 30.0),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: <Widget>[
+                              GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 3,
+                                          childAspectRatio: 2,
+                                          mainAxisSpacing: 0.6,
+                                          crossAxisSpacing: 0.6),
+                                  itemCount: 12,
+                                  itemBuilder: (_, index) =>
+                                      _buildButton(index)),
+                            ]),
+                      ),
+                      SizedBox(
+                          width: double.infinity,
+                          height: 50.0,
+                          child: RaisedButton.icon(
+                            icon: Icon(
+                              Icons.center_focus_strong,
+                              color: Colors.white,
+                            ),
+                            label: Text("Scan QR Code",
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18.0)),
+                            onPressed: () {
+                              _scan(_amountController.text, context);
+                            },
+                          ))
+                    ],
+                  ))
             ],
-          ),
+          )
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            _scan(_amountController.text, quantities, productsList,
-                productsNameList, context);
-          },
-          label: Text("Scan QR Code",
-              style: TextStyle(color: Colors.white, fontSize: 18.0)),
-          icon: Icon(Icons.center_focus_strong)),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
-  static Future<String> scan(BuildContext context) async { //Scan QR code
+  static Future<String> scan(BuildContext context) async {
+    //Scan QR code
     try {
       return await BarcodeScanner.scan();
     } catch (e) {
@@ -532,21 +478,9 @@ class _PaymentState extends State<Payment> {
     return null;
   }
 
-  void _scan(
-      String _amount, quantities, products, names, BuildContext context) async { //Show dialog after scan complete
-    final idList = [];
-    final quantitiesList = [];
-    final nameList = [];
-
+  void _scan(String _amount, BuildContext context) async {
+    //Show dialog after scan complete
     if (_amount.isNotEmpty && int.parse(_amount) > 0) {
-      for (var i = 0; i < quantities.length; i++) {
-        if (quantities[i] != 0) {
-          idList.add('"' + products[i].toString() + '"');
-          quantitiesList.add(quantities[i]);
-          nameList.add(names[i]);
-        }
-      }
-
       String id = await scan(context);
       String displayAmount =
           FlutterMoneyFormatter(amount: double.parse(_amount)).output.nonSymbol;
@@ -571,7 +505,7 @@ class _PaymentState extends State<Payment> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
-                        Text('Confirm Payment?',
+                        Text('Confirm Topup?',
                             style: Theme.of(context)
                                 .textTheme
                                 .headline
@@ -631,59 +565,7 @@ class _PaymentState extends State<Payment> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
                               Text(
-                                "Product",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subhead
-                                    .copyWith(color: Colors.black54),
-                              ),
-                              Text(
-                                "Quantity",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .subhead
-                                    .copyWith(color: Colors.black54),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Expanded(
-                                child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: nameList.length,
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Text(
-                                            nameList[index],
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .title,
-                                          ),
-                                          Text(
-                                            quantitiesList[index].toString(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .title,
-                                          ),
-                                        ],
-                                      );
-                                    }))
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 24.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Text(
-                                "Amount (RM)",
+                                "Topup Amount (RM)",
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
@@ -718,41 +600,37 @@ class _PaymentState extends State<Payment> {
                                       color: Colors.white, fontSize: 18.0)),
                               onPressed: () {
                                 var map = new Map<String, dynamic>();
-                                map['userId'] = id;
-                                map['storeId'] =
-                                    storeId; //change to storeId later
+                                map['id'] = id;
+                                map['agentId'] =
+                                    agentId; //change to storeId later
                                 map['time'] = DateFormat('yyyy-MM-dd HH:mm:ss')
                                     .format(DateTime.now());
                                 map['amount'] = _amount;
-                                map['products'] = idList.toString();
-                                map['numbers'] = quantitiesList.toString();
-                                map['type'] = 'payment';
+                                map['type'] = 'topup';
 
-                                FormData paymentData =
+                                FormData topupData =
                                     new FormData.fromMap(map);
 
                                 var loginMap = new Map<String, dynamic>();
-                                loginMap['STORE'] =
-                                    storeId; //Change to storeId later
+                                loginMap['USER'] =
+                                    agentId; //Change to storeId later
                                 loginMap['PASS'] =
-                                    storeSecret; //Change to storeSecret later
-                                loginMap['type'] = 'login';
+                                    agentSecret; //Change to storeSecret later
+                                loginMap['type'] = 'topup';
 
                                 FormData loginData =
                                     new FormData.fromMap(loginMap);
 
                                 var balanceMap = new Map<String, dynamic>();
-                                balanceMap['id'] =
-                                    id;
+                                balanceMap['id'] = id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
-                                new FormData.fromMap(balanceMap);
-
+                                    new FormData.fromMap(balanceMap);
 
                                 if (makingPayment == false) {
-                                  _verifyResult =
-                                      _verify(loginData, paymentData, balanceData, _amount);
+                                  _verifyResult = _verify(loginData,
+                                      topupData, balanceData, _amount);
                                   Navigator.pop(context);
 
                                   showModalBottomSheet(
