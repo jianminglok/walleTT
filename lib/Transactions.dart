@@ -21,11 +21,6 @@ class Transactions extends StatefulWidget {
 
   @override
   _TransactionsState createState() => _TransactionsState();
-
-  void checkOrderLength() async {
-    _TransactionsState().refreshOrder();
-  }
-
 }
 
 class _TransactionsState extends State<Transactions> {

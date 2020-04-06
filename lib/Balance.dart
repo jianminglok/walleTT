@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:basic_utils/basic_utils.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:walleTT/Transactions.dart';
 
 class Balance extends StatefulWidget {
   Balance({Key key}) : super(key: key);
@@ -48,7 +50,7 @@ class _BalanceState extends State<Balance> {
       if (loginStatus == 'ok') {
         //If verification is successful get list of products
         var map = new Map<String, dynamic>();
-        map['id'] = userId;
+        map['id'] = 'U' + userId;
         map['type'] = 'checkbalance';
 
         FormData formData = new FormData.fromMap(map);
@@ -94,9 +96,11 @@ class _BalanceState extends State<Balance> {
 
   void _scan() async {
     String userId = await scan();
-    setState(() {
-      _future2 = _verify(userId);
-    });
+    if(userId != null && userId.isNotEmpty) {
+      setState(() {
+        _future2 = _verify(userId);
+      });
+    }
   }
 
   static Future<String> scan() async {
@@ -167,7 +171,9 @@ class _BalanceState extends State<Balance> {
                                                         color: Colors.white,
                                                         fontSize: 18.0)),
                                                 onPressed: () {
-                                                  _scan();
+                                                  setState(() {
+                                                    _scan();
+                                                  });
                                                 },
                                               )))));
                             case ConnectionState

@@ -9,6 +9,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Topup.dart';
+
 // TODO: refactor this monstrosity of a class
 
 class CreateForm extends StatefulWidget {
@@ -26,7 +28,7 @@ class _CreateFormState extends State<CreateForm> {
     TextEditingController()
   ];
   List<Widget> _pages;
-  double _formProgress = 0.15;
+  double _formProgress = 0.2;
   bool userOwesFriend = false;
   bool suggestionsRemovable = false;
 
@@ -48,6 +50,8 @@ class _CreateFormState extends State<CreateForm> {
     agentId = prefs.getString('id');
     agentSecret = prefs.getString('secret');
   }
+
+
 
   var agentId;
   var agentSecret;
@@ -489,6 +493,7 @@ class _CreateFormState extends State<CreateForm> {
                                                                                                   _formProgress -= 3 / _pages.length;
                                                                                                   _pageViewController.jumpToPage(_pageViewController.initialPage);
                                                                                                   FocusScope.of(context).unfocus();
+
                                                                                                 },
                                                                                               )
                                                                                             ],

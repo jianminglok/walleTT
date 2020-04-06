@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
@@ -10,9 +12,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
+import 'Balance.dart';
+import 'Freeze.dart';
 import 'Login.dart';
 
 import 'Product.dart';
+import 'Transactions.dart';
 
 class Payment extends StatefulWidget {
   Payment({Key key}) : super(key: key);
@@ -80,7 +85,7 @@ class _PaymentState extends State<Payment> {
 
               if (topupStatus == 'successful') {
                 setState(() {
-                  _amountController.text = '0';
+                  _amountController.text = '';
 
                   setState(() {
                     _sharedStrings = _refreshBalance();
@@ -212,8 +217,8 @@ class _PaymentState extends State<Payment> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     var loginMap = new Map<String, dynamic>();
-    loginMap['USER'] = agentId; //Change to storeId later
-    loginMap['PASS'] = agentSecret; //Change to storeSecret later
+    loginMap['USER'] = 'A001'; //Change to storeId later
+    loginMap['PASS'] = 'A001'; //Change to storeSecret later
     loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
@@ -275,13 +280,22 @@ class _PaymentState extends State<Payment> {
               icon: Icon(Icons.exit_to_app),
               onPressed: () async {
                 //Logout
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.remove('id');
-                prefs.remove('name');
-                prefs.remove('status');
-                prefs.remove('secret');
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (BuildContext ctx) => Login()));
+                _showLogoutDialog(context);
+              },
+            ),
+          ),
+          Positioned(
+            top: 30,
+            right: 5,
+            child: IconButton(
+              color: Colors.white,
+              icon: Icon(Icons.error_outline),
+              onPressed: () {
+                Navigator.push( //Open QR Scanner
+                  context,
+                  MaterialPageRoute(builder: (context) => Freeze(),
+                  ),
+                );
               },
             ),
           ),
@@ -600,7 +614,7 @@ class _PaymentState extends State<Payment> {
                                       color: Colors.white, fontSize: 18.0)),
                               onPressed: () {
                                 var map = new Map<String, dynamic>();
-                                map['id'] = id;
+                                map['id'] = 'U' + id;
                                 map['agentId'] =
                                     agentId; //change to storeId later
                                 map['time'] = DateFormat('yyyy-MM-dd HH:mm:ss')
@@ -622,7 +636,7 @@ class _PaymentState extends State<Payment> {
                                 new FormData.fromMap(loginMap);
 
                                 var balanceMap = new Map<String, dynamic>();
-                                balanceMap['id'] = id;
+                                balanceMap['id'] = 'U' + id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
@@ -787,5 +801,60 @@ class _PaymentState extends State<Payment> {
         content: Text("Amount must be larger than 0!"),
       ));
     }
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        if (Platform.isIOS) {
+          return CupertinoAlertDialog(
+            title: Text("Confirm logout?"),
+            content: Text("You can only perform transactions after you have logged in"),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text("Logout"),
+                onPressed: () {
+
+                },
+              ),
+            ],
+          );
+        } else
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text("Confirm logout?"),
+            content: Text("You can only perform transactions after you have logged in"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Cancel"),
+                textColor: Colors.black87,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("Logout"),
+                textColor: Colors.red,
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  prefs.remove('id');
+                  prefs.remove('name');
+                  prefs.remove('status');
+                  prefs.remove('secret');
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (BuildContext ctx) => Login()));
+                },
+              ),
+            ],
+          );
+      },
+    );
   }
 }
