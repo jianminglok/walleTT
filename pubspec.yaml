@@ -46,6 +46,7 @@ dependencies:
   intl: ^0.15.8
   basic_utils: ^2.4.4
   dio: ^3.0.9
+  flutter_typeahead:
 
 dev_dependencies:
   flutter_test:

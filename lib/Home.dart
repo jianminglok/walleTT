@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:walleTT/Register.dart';
 import 'package:walleTT/Transactions.dart';
 import 'package:walleTT/colors.dart';
 
@@ -91,18 +92,22 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     pageList.add(Payment());
     pageList.add(Balance());
+    pageList.add(Register());
     pageList.add(Transactions());
     super.initState();
   }
 
-  Widget _bottomNavigationBar(int selectedIndex) => BottomNavigationBar( //Switch between page
+  Widget _bottomNavigationBar(int selectedIndex) => BottomNavigationBar(
+    type: BottomNavigationBarType.fixed,//Switch between page
     onTap: (int index) => setState(() => _selectedIndex = index),
     currentIndex: selectedIndex,
     items: const <BottomNavigationBarItem>[
       BottomNavigationBarItem(
           icon: Icon(Icons.add), title: Text('Topup')),
       BottomNavigationBarItem(
-          icon: Icon(Icons.center_focus_strong), title: Text('Check Balance')),//Payment Page
+          icon: Icon(Icons.center_focus_strong), title: Text('Check Balance')),//Balance Page
+      BottomNavigationBarItem(
+          icon: Icon(Icons.fiber_new), title: Text('Registration')),
       BottomNavigationBarItem(
           icon: Icon(Icons.list), title: Text('Transactions')), //Transactions Record Page
     ],

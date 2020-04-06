@@ -9,8 +9,6 @@ import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<String>> _sharedStrings;
-
 class Balance extends StatefulWidget {
   Balance({Key key}) : super(key: key);
 
@@ -24,12 +22,12 @@ class _BalanceState extends State<Balance> {
 
   Future _future;
 
-  Future _future2;
+  Future<List<String>> _future2;
 
   var agentId;
   var agentSecret;
 
-  Future _verify(String userId) async {
+  Future<List<String>> _verify(String userId) async {
     //Do verification before getting order info
 
     var loginMap = new Map<String, dynamic>();
@@ -63,9 +61,18 @@ class _BalanceState extends State<Balance> {
 
           List<String> strings = [];
 
-          strings.add(jsonData['name']);
-          strings.add(jsonData['balance'].toString());
-          strings.add(jsonData['remark']);
+          print(jsonData['status']);
+
+          if (jsonData['status'] == 'User does not exist!') {
+            strings.add(jsonData['status']);
+          } else {
+            strings.add(jsonData['name']);
+            strings.add(jsonData['balance'].toString());
+            strings.add(jsonData['remark']);
+            strings.add(userId);
+          }
+
+          print(strings);
 
           return strings;
         } catch (e) {
@@ -138,7 +145,7 @@ class _BalanceState extends State<Balance> {
                       size: 50.0,
                     )));
                   default:
-                    return FutureBuilder(
+                    return FutureBuilder<List<String>>(
                         future: _future2,
                         builder: (context, snapshot) {
                           switch (snapshot.connectionState) {
@@ -172,123 +179,246 @@ class _BalanceState extends State<Balance> {
                                 size: 50.0,
                               )));
                             default:
-                              return Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: <Widget>[
-                                      Container(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(26.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: <Widget>[
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 24.0),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      "Name",
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .subhead
-                                                          .copyWith(color: Colors.black54),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    snapshot.data[0],
-                                                    style:
-                                                    Theme.of(context).textTheme.title,
-                                                  ),
-                                                ],
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 24.0),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      'Status',
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .subhead
-                                                          .copyWith(color: Colors.black54),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    StringUtils.capitalize(snapshot.data[2]),
-                                                    style:
-                                                    Theme.of(context).textTheme.title,
-                                                  ),
-                                                ],
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 24.0),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
-                                                  children: <Widget>[
-                                                    Text(
-                                                      "Balance (RM)",
-                                                      style: Theme.of(context)
-                                                          .textTheme
-                                                          .subhead
-                                                          .copyWith(color: Colors.black54),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    FlutterMoneyFormatter(amount: double.parse(snapshot.data[1])).output.nonSymbol,
-                                                    style: TextStyle(
-                                                        fontSize: 40.0,
-                                                        fontWeight: FontWeight.w800),
-                                                  ),
-                                                ],
-                                              ),
-                                              Padding(
-                                                  padding: const EdgeInsets.only(top: 48.0),
-                                                  child: SizedBox(
-                                                      width: double.infinity,
-                                                      height: 50.0,
-                                                      child: RaisedButton.icon(
-                                                        icon: Icon(
-                                                          Icons.center_focus_strong,
-                                                          color: Colors.white,
-                                                        ),
-                                                        label: Text("Scan QR Code",
-                                                            style: TextStyle(
-                                                                color: Colors.white,
-                                                                fontSize: 18.0)),
-                                                        onPressed: () {
-                                                          _scan();
-                                                        },
-                                                      )))
-                                            ],
+                              if (snapshot.data.length == 1) {
+                                return Padding(
+                                    padding: const EdgeInsets.all(26.0),
+                                    child: Column(
+                                      children: <Widget>[
+                                        Center(
+                                          child: Icon(
+                                            Icons.clear,
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            size: 60.0,
                                           ),
                                         ),
-                                      )
-                                    ],
-                                  ));
+                                        Center(
+                                          child: Text(
+                                            snapshot.data[0],
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .title,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 48.0),
+                                            child: SizedBox(
+                                                width: double.infinity,
+                                                height: 50.0,
+                                                child: RaisedButton.icon(
+                                                  icon: Icon(
+                                                    Icons.center_focus_strong,
+                                                    color: Colors.white,
+                                                  ),
+                                                  label: Text("Scan QR Code",
+                                                      style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontSize: 18.0)),
+                                                  onPressed: () {
+                                                    _scan();
+                                                  },
+                                                )))
+                                      ],
+                                    ));
+                              } else {
+                                return Expanded(
+                                    child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(26.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: <Widget>[
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 24.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment
+                                                    .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    "ID",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .subhead
+                                                        .copyWith(
+                                                        color:
+                                                        Colors.black54),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                              MainAxisAlignment
+                                                  .spaceBetween,
+                                              children: <Widget>[
+                                                Text(
+                                                  snapshot.data[3],
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .title,
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 24.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    "Name",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .subhead
+                                                        .copyWith(
+                                                            color:
+                                                                Colors.black54),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Text(
+                                                  snapshot.data[0],
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .title,
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 24.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    'Status',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .subhead
+                                                        .copyWith(
+                                                            color:
+                                                                Colors.black54),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Text(
+                                                  StringUtils.capitalize(
+                                                      snapshot.data[2]),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .title,
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 24.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text(
+                                                    "Balance (RM)",
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .subhead
+                                                        .copyWith(
+                                                            color:
+                                                                Colors.black54),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Text(
+                                                  FlutterMoneyFormatter(
+                                                          amount: double.parse(
+                                                              snapshot.data[1]))
+                                                      .output
+                                                      .nonSymbol,
+                                                  style: TextStyle(
+                                                      fontSize: 40.0,
+                                                      fontWeight:
+                                                          FontWeight.w800),
+                                                ),
+                                              ],
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 24.0),
+                                            ),
+                                            Container(
+                                              child: snapshot.data[2] ==
+                                                      'frozen'
+                                                  ? Center(
+                                                      child: Text(
+                                                        'Account is frozen. Please verify user identity and contact administrator if required.',
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .subtitle,
+                                                      ),
+                                                    )
+                                                  : Container(),
+                                            ),
+                                            Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 48.0),
+                                                child: SizedBox(
+                                                    width: double.infinity,
+                                                    height: 50.0,
+                                                    child: RaisedButton.icon(
+                                                      icon: Icon(
+                                                        Icons
+                                                            .center_focus_strong,
+                                                        color: Colors.white,
+                                                      ),
+                                                      label: Text(
+                                                          "Scan QR Code",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontSize: 18.0)),
+                                                      onPressed: () {
+                                                        _scan();
+                                                      },
+                                                    )))
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ));
+                              }
                           }
                         }); //Display card when loaded
                 }

@@ -609,7 +609,7 @@ class _PaymentState extends State<Payment> {
                                 map['type'] = 'topup';
 
                                 FormData topupData =
-                                    new FormData.fromMap(map);
+                                new FormData.fromMap(map);
 
                                 var loginMap = new Map<String, dynamic>();
                                 loginMap['USER'] =
@@ -619,14 +619,14 @@ class _PaymentState extends State<Payment> {
                                 loginMap['type'] = 'topup';
 
                                 FormData loginData =
-                                    new FormData.fromMap(loginMap);
+                                new FormData.fromMap(loginMap);
 
                                 var balanceMap = new Map<String, dynamic>();
                                 balanceMap['id'] = id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
-                                    new FormData.fromMap(balanceMap);
+                                new FormData.fromMap(balanceMap);
 
                                 if (makingPayment == false) {
                                   _verifyResult = _verify(loginData,
@@ -653,112 +653,112 @@ class _PaymentState extends State<Payment> {
                                                       26.0),
                                                   child: Center(
                                                       child:
-                                                          FutureBuilder<String>(
-                                                              future:
-                                                                  _verifyResult,
-                                                              builder: (context,
-                                                                  snapshot) {
-                                                                switch (snapshot
-                                                                    .connectionState) {
-                                                                  case ConnectionState
-                                                                      .none:
-                                                                  case ConnectionState
-                                                                      .waiting: //Display progress circle while loading
-                                                                    return Column(
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment
-                                                                                .stretch,
-                                                                        mainAxisSize:
-                                                                            MainAxisSize
-                                                                                .max,
-                                                                        children: <
-                                                                            Widget>[
-                                                                          Center(
-                                                                            child:
-                                                                                CircularProgressIndicator(),
+                                                      FutureBuilder<String>(
+                                                          future:
+                                                          _verifyResult,
+                                                          builder: (context,
+                                                              snapshot) {
+                                                            switch (snapshot
+                                                                .connectionState) {
+                                                              case ConnectionState
+                                                                  .none:
+                                                              case ConnectionState
+                                                                  .waiting: //Display progress circle while loading
+                                                                return Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .stretch,
+                                                                    mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .max,
+                                                                    children: <
+                                                                        Widget>[
+                                                                      Center(
+                                                                        child:
+                                                                        CircularProgressIndicator(),
+                                                                      )
+                                                                    ]);
+                                                              default: //Display card when loaded
+                                                                return snapshot.data ==
+                                                                    'successful'
+                                                                    ? Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment
+                                                                        .stretch,
+                                                                    mainAxisSize: MainAxisSize
+                                                                        .max,
+                                                                    children: <
+                                                                        Widget>[
+                                                                      Center(
+                                                                        child: Icon(
+                                                                          Icons.check,
+                                                                          color: Color(0xff03da9d),
+                                                                          size: 60.0,
+                                                                        ),
+                                                                      ),
+                                                                      Center(
+                                                                        child: Text(
+                                                                          'Successful',
+                                                                          style: Theme.of(context).textTheme.title,
+                                                                          textAlign: TextAlign.center,
+                                                                        ),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets.only(top: 24.0),
+                                                                      ),
+                                                                      Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                        children: <Widget>[
+                                                                          RaisedButton(
+                                                                            child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                                                            onPressed: () {
+                                                                              setState(() {
+                                                                                makingPayment = false;
+                                                                              });
+                                                                              Navigator.pop(context);
+                                                                            },
                                                                           )
-                                                                        ]);
-                                                                  default: //Display card when loaded
-                                                                    return snapshot.data ==
-                                                                            'successful'
-                                                                        ? Column(
-                                                                            crossAxisAlignment: CrossAxisAlignment
-                                                                                .stretch,
-                                                                            mainAxisSize: MainAxisSize
-                                                                                .max,
-                                                                            children: <
-                                                                                Widget>[
-                                                                                Center(
-                                                                                  child: Icon(
-                                                                                    Icons.check,
-                                                                                    color: Color(0xff03da9d),
-                                                                                    size: 60.0,
-                                                                                  ),
-                                                                                ),
-                                                                                Center(
-                                                                                  child: Text(
-                                                                                    'Successful',
-                                                                                    style: Theme.of(context).textTheme.title,
-                                                                                    textAlign: TextAlign.center,
-                                                                                  ),
-                                                                                ),
-                                                                                Padding(
-                                                                                  padding: const EdgeInsets.only(top: 24.0),
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                                                  children: <Widget>[
-                                                                                    RaisedButton(
-                                                                                      child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                                                                                      onPressed: () {
-                                                                                        setState(() {
-                                                                                          makingPayment = false;
-                                                                                        });
-                                                                                        Navigator.pop(context);
-                                                                                      },
-                                                                                    )
-                                                                                  ],
-                                                                                )
-                                                                              ])
-                                                                        : Column(
-                                                                            crossAxisAlignment:
-                                                                                CrossAxisAlignment.stretch,
-                                                                            mainAxisSize: MainAxisSize.max,
-                                                                            children: <Widget>[
-                                                                                Center(
-                                                                                  child: Icon(
-                                                                                    Icons.clear,
-                                                                                    color: Theme.of(context).primaryColor,
-                                                                                    size: 60.0,
-                                                                                  ),
-                                                                                ),
-                                                                                Center(
-                                                                                  child: Text(
-                                                                                    snapshot.data.toString(),
-                                                                                    style: Theme.of(context).textTheme.title,
-                                                                                    textAlign: TextAlign.center,
-                                                                                  ),
-                                                                                ),
-                                                                                Padding(
-                                                                                  padding: const EdgeInsets.only(top: 24.0),
-                                                                                ),
-                                                                                Row(
-                                                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                                                  children: <Widget>[
-                                                                                    RaisedButton(
-                                                                                      child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                                                                                      onPressed: () {
-                                                                                        setState(() {
-                                                                                          makingPayment = false;
-                                                                                        });
-                                                                                        Navigator.pop(context);
-                                                                                      },
-                                                                                    )
-                                                                                  ],
-                                                                                )
-                                                                              ]);
-                                                                }
-                                                              }))))
+                                                                        ],
+                                                                      )
+                                                                    ])
+                                                                    : Column(
+                                                                    crossAxisAlignment:
+                                                                    CrossAxisAlignment.stretch,
+                                                                    mainAxisSize: MainAxisSize.max,
+                                                                    children: <Widget>[
+                                                                      Center(
+                                                                        child: Icon(
+                                                                          Icons.clear,
+                                                                          color: Theme.of(context).primaryColor,
+                                                                          size: 60.0,
+                                                                        ),
+                                                                      ),
+                                                                      Center(
+                                                                        child: Text(
+                                                                          snapshot.data.toString(),
+                                                                          style: Theme.of(context).textTheme.title,
+                                                                          textAlign: TextAlign.center,
+                                                                        ),
+                                                                      ),
+                                                                      Padding(
+                                                                        padding: const EdgeInsets.only(top: 24.0),
+                                                                      ),
+                                                                      Row(
+                                                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                        children: <Widget>[
+                                                                          RaisedButton(
+                                                                            child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                                                            onPressed: () {
+                                                                              setState(() {
+                                                                                makingPayment = false;
+                                                                              });
+                                                                              Navigator.pop(context);
+                                                                            },
+                                                                          )
+                                                                        ],
+                                                                      )
+                                                                    ]);
+                                                            }
+                                                          }))))
                                         ]);
                                       });
                                 } else {
