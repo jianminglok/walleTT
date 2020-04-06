@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
 
 import 'Order.dart';
@@ -27,36 +28,77 @@ class _OrderInfoState extends State<OrderInfo> {
 
   Future<bool> _future;
 
-  @override
-  void initState() {
-    super.initState();
-    _future = _getProducts();
-  }
+  var storeId;
+  var storeName;
+  var storeStatus;
+  var storeSecret;
 
-  Future<bool> _getProducts() async {
-    //Get list of users from server
+  Future<bool> _verify() async {
 
-    var map = new Map<String, dynamic>();
-    map['id'] = 'S001';
-    map['type'] = 'products';
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
 
-    FormData formData = new FormData.fromMap(map);
+    FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: formData);
-
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
-      for (var i in jsonData) {
-        productsNameList.add(i["name"]);
-        productsList.add(i["id"]);
+      String loginStatus = jsonData["status"];
+      String status;
+
+      if(loginStatus == 'store') {
+        var map = new Map<String, dynamic>();
+        map['id'] = 'S001';
+        map['type'] = 'products';
+
+        print('This is ' + storeId);
+
+        FormData formData = new FormData.fromMap(map);
+
+        try {
+          Response response =
+          await Dio().post("http://10.0.88.178/process.php", data: formData);
+
+          var jsonData = json.decode(response.toString());
+
+          for (var i in jsonData) {
+            productsNameList.add(i["name"]);
+            productsList.add(i["id"]);
+          }
+
+          return true;
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
       }
 
-      return true;
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> _getUserData() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    storeId = prefs.getString('id');
+    storeName = prefs.getString('name');
+    storeStatus = prefs.getString('status');
+    storeSecret = prefs.getString('secret');
+
+    setState(() {
+      _future = _verify();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserData();
   }
 
   @override

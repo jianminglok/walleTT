@@ -36,9 +36,6 @@ class Transactions extends StatefulWidget {
 class _TransactionsState extends State<Transactions> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = new GlobalKey<RefreshIndicatorState>();
 
-  bool _isLoading = true;
-  bool _hasMore = true;
-
   var storeId;
   var storeName;
   var storeStatus;
@@ -53,9 +50,6 @@ class _TransactionsState extends State<Transactions> {
     loginMap['STORE'] = storeId; //Change to storeId later
     loginMap['PASS'] = storeSecret; //Change to storeSecret later
     loginMap['type'] = 'login';
-
-    print(storeId);
-    print(storeSecret);
 
     FormData loginData = new FormData.fromMap(loginMap);
 
@@ -117,7 +111,9 @@ class _TransactionsState extends State<Transactions> {
     storeStatus = prefs.getString('status');
     storeSecret = prefs.getString('secret');
 
-    _future = _verify();
+    setState(() {
+      _future = _verify();
+    });
   }
 
   @override
