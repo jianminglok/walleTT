@@ -5,11 +5,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
-import 'Transactions.dart';
-import 'package:http/http.dart' as http;
+import 'Login.dart';
 
 import 'Product.dart';
 
@@ -35,6 +36,7 @@ class _PaymentState extends State<Payment> {
   bool success = false;
 
   Future<List<Product>> _future;
+  Future<List<String>> _sharedStrings;
   Future<String> _paymentResult;
   Future<String> _verifyResult;
 
@@ -43,17 +45,23 @@ class _PaymentState extends State<Payment> {
   var productsList = [];
   var productsNameList = [];
 
+  var storeId;
+  var storeName;
+  var storeStatus;
+  var storeSecret;
+  var storeBalance;
+
   TextEditingController _amountController = TextEditingController();
 
   Future<String> _verify(formData, paymentData) async {
     try {
-      Response response = await Dio().post("http://10.0.88.178/verify.php", data: formData);
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
       String status;
 
-      if(loginStatus == 'ok') {
+      if(loginStatus == 'store') {
         try {
           Response response = await Dio().post("http://10.0.88.178/process.php", data: paymentData);
           var jsonData = json.decode(response.toString());
@@ -70,6 +78,8 @@ class _PaymentState extends State<Payment> {
                 quantities[i] = 0;
                 _amountController.text = '0';
               }
+
+              _sharedStrings = _refreshStoreInfo();
             });
           }
 
@@ -86,50 +96,56 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<String> _doPayment(formData) async {
-    try {
-      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
-      var jsonData = json.decode(response.toString());
-
-      String status = jsonData["status"];
-
-      //Transactions().checkOrderLength();
-
-      return status;
-    } catch (e) {
-        print(e);
-    }
-  }
-
   Future<List<Product>> _getProducts() async {
-    //Get list of users from server
 
-    var map = new Map<String, dynamic>();
-    map['id'] = 'S001';
-    map['type'] = 'products';
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
 
-    FormData formData = new FormData.fromMap(map);
+    FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
-
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
-      List<Product> products = [];
+      String loginStatus = jsonData["status"];
+      String status;
 
-      for (var i in jsonData) {
-        Product product = Product(
-            i["id"], i["name"], double.parse(i["price"]));
+      if(loginStatus == 'store') {
+        var map = new Map<String, dynamic>();
+        map['id'] = 'S001'; //change to storeId later
+        map['type'] = 'products';
 
-        products.add(product);
+        FormData formData = new FormData.fromMap(map);
 
-        quantities.add(0);
-        quantitiesString.add("0");
-        productsNameList.add(i["name"]);
-        productsList.add(i["id"]);
+        try {
+          Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+
+          var jsonData = json.decode(response.toString());
+
+          List<Product> products = [];
+
+          for (var i in jsonData) {
+            Product product = Product(
+                i["id"], i["name"], double.parse(i["price"]));
+
+            products.add(product);
+
+            quantities.add(0);
+            quantitiesString.add("0");
+            productsNameList.add(i["name"]);
+            productsList.add(i["id"]);
+          }
+
+          return products;
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
       }
 
-      return products;
     } catch (e) {
       print(e);
     }
@@ -147,10 +163,80 @@ class _PaymentState extends State<Payment> {
     });
   }
 
+  Future<List<String>> _getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    storeId = prefs.getString('id');
+    storeStatus = prefs.getString('status');
+    storeSecret = prefs.getString('secret');
+
+    _sharedStrings = _getStoreInfo();
+    _future = _getProducts();
+  }
+
+  Future<List<String>> _getStoreInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
+
+    FormData loginData = new FormData.fromMap(loginMap);
+
+    try {
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
+      var jsonData = json.decode(response.toString());
+
+      List<String> strings = [];
+      storeName = prefs.getString('name');
+      storeBalance = jsonData['balance'].toString();
+
+      strings.add(storeName);
+      strings.add(storeBalance);
+
+      prefs.setString('balance', storeBalance);
+
+      return strings;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<String>> _refreshStoreInfo() async {
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
+
+    FormData loginData = new FormData.fromMap(loginMap);
+
+    try {
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
+      var jsonData = json.decode(response.toString());
+
+      List<String> strings = [];
+      storeName = prefs.getString('name');
+      storeBalance = jsonData['balance'].toString();
+
+      strings.add(storeName);
+      strings.add(storeBalance);
+
+      prefs.setString('balance', storeBalance);
+
+      return strings;
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _future = _getProducts();
+    _getUserData();
   }
 
   @override
@@ -185,8 +271,14 @@ class _PaymentState extends State<Payment> {
             child: IconButton(
               color: Colors.white,
               icon: Icon(Icons.exit_to_app),
-              onPressed: () {
-
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.remove('id');
+                prefs.remove('name');
+                prefs.remove('status');
+                prefs.remove('secret');
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (BuildContext ctx) => Login()));
               },
             ),
           ),
@@ -203,9 +295,25 @@ class _PaymentState extends State<Payment> {
           ),
           Column(
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 65.0),
-                child: TabsContainer(),
+               SizedBox(
+                  height: 185,
+                  child: Container(
+                    padding: EdgeInsets.only(top: 65.0),
+                    child: FutureBuilder<List<String>>(
+                        future: _sharedStrings,
+                        builder: (context, snapshot) {
+                          print(snapshot);
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.none:
+                            case ConnectionState.waiting:
+                              return Center(
+                              );
+                            default:
+                              return TabsContainer(name: snapshot.data[0], balance: snapshot.data[1]);
+                          }
+                        }
+                    ),
+                  ),
               ),
               Expanded(
                   child: Container(
@@ -234,11 +342,15 @@ class _PaymentState extends State<Payment> {
                               switch (snapshot.connectionState) {
                                 case ConnectionState.none:
                                 case ConnectionState.waiting: //Display progress circle while loading
-                                  return Container(
-                                      padding: EdgeInsets.only(top: 30.0),
-                                      child: Center(
-                                        child: CircularProgressIndicator(),
-                                      )
+                                  return Expanded(
+                                        child: Container(
+                                        child: Center(
+                                            child: SpinKitDoubleBounce(
+                                              color: Theme.of(context).primaryColor,
+                                              size: 50.0,
+                                            )
+                                        ),
+                                      ),
                                   );
                                 default: //Display card when loaded
                                   return Expanded(
@@ -584,7 +696,7 @@ class _PaymentState extends State<Payment> {
                                 onPressed: () {
                                   var map = new Map<String, dynamic>();
                                   map['userId'] = id;
-                                  map['storeId'] = 'S001';
+                                  map['storeId'] = 'S001'; //change to storeId later
                                   map['time'] = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
                                   map['amount'] = _amount;
                                   map['products'] = idList.toString();
@@ -594,9 +706,9 @@ class _PaymentState extends State<Payment> {
                                   FormData paymentData = new FormData.fromMap(map);
 
                                   var loginMap = new Map<String, dynamic>();
-                                  loginMap['USER'] = 'A001';
-                                  loginMap['PASS'] = 'A001';
-                                  loginMap['type'] = 'payment';
+                                  loginMap['STORE'] = storeId; //Change to storeId later
+                                  loginMap['PASS'] = storeSecret; //Change to storeSecret later
+                                  loginMap['type'] = 'login';
 
                                   FormData loginData = new FormData.fromMap(loginMap);
 

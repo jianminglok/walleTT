@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:walleTT/Transactions.dart';
 
@@ -85,9 +86,11 @@ class _OrderInfoState extends State<OrderInfo> {
                     case ConnectionState
                         .waiting: //Display progress circle while loading
                       return Container(
-                          padding: EdgeInsets.only(top: 50.0),
                           child: Center(
-                            child: CircularProgressIndicator(),
+                              child: SpinKitDoubleBounce(
+                                color: Theme.of(context).primaryColor,
+                                size: 50.0,
+                              )
                           ));
                     default: //Display card when loaded
                       return Expanded(
@@ -101,7 +104,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
                                     mainAxisSize: MainAxisSize.max,
                                     children: <Widget>[
-                                      Text('Order ' + args.orderId.toString(),
+                                      Text('Order ID: ' + args.orderId.toString(),
                                           style: Theme.of(context)
                                               .textTheme
                                               .headline
@@ -279,7 +282,8 @@ class _OrderInfoState extends State<OrderInfo> {
                           ));
                   }
                 })
-          ]
+
+            ]
         )
         );
   }

@@ -7,7 +7,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/tabsContainer.dart';
 
 import 'Order.dart';
@@ -37,60 +39,97 @@ class _TransactionsState extends State<Transactions> {
   bool _isLoading = true;
   bool _hasMore = true;
 
+  var storeId;
+  var storeName;
+  var storeStatus;
+  var storeSecret;
+
   @override
   bool get wantKeepAlive => true;
 
-  Future<List<Order>> _getUsers() async {
-    //Get list of users from server
+  Future<List<Order>> _verify() async {
 
-    var map = new Map<String, dynamic>();
-    map['id'] = 'S001';
-    map['type'] = 'transactionhistory';
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
 
-    FormData formData = new FormData.fromMap(map);
+    print(storeId);
+    print(storeSecret);
+
+    FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
-      print(response);
-
+      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
-      print(jsonData);
+      String loginStatus = jsonData["status"];
+      String status;
 
-      List<Order> users = [];
+      if(loginStatus == 'store') {
+        var map = new Map<String, dynamic>();
+        map['id'] = storeId; //change to storeId later
+        map['type'] = 'transactionhistory';
 
-      for (var i in jsonData) {
-        Order user = Order(
-            int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
-            i["user"]["id"], i["user"]["name"], i["products"], i["amounts"]);
+        FormData formData = new FormData.fromMap(map);
 
-        users.add(user);
+        try {
+          Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+          print(response);
+
+          var jsonData = json.decode(response.toString());
+
+          print(jsonData);
+
+          List<Order> users = [];
+
+          for (var i in jsonData) {
+            Order user = Order(
+                int.parse(i["id"]), i["status"], double.parse(i["amount"]), i["time"],
+                i["user"]["id"], i["user"]["name"], i["products"], i["amounts"]);
+
+            users.add(user);
+          }
+          return users;
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
       }
-      return users;
+
     } catch (e) {
       print(e);
     }
   }
 
-
   Future<List<Order>> refreshOrder() async { //Refresh list of users from server
     setState(() {
-      _future = _getUsers();
+      _future = _verify();
     });
+  }
+
+  Future<void> _getUserData() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    storeId = prefs.getString('id');
+    storeName = prefs.getString('name');
+    storeStatus = prefs.getString('status');
+    storeSecret = prefs.getString('secret');
+
+    _future = _verify();
   }
 
   @override
   void initState() {
     super.initState();
-    _isLoading = true;
-    _hasMore = true;
-    _future = _getUsers();
+    _getUserData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar : AppBar(
         centerTitle: true,
         title: new Text("Transactions"),
         backgroundColor: Theme.of(context).primaryColor,
@@ -107,9 +146,11 @@ class _TransactionsState extends State<Transactions> {
                 case ConnectionState.none:
                 case ConnectionState.waiting: //Display progress circle while loading
                   return Container(
-                      padding: EdgeInsets.only(top: 50.0),
                     child: Center(
-                      child: CircularProgressIndicator(),
+                        child: SpinKitDoubleBounce(
+                          color: Theme.of(context).primaryColor,
+                          size: 50.0,
+                        )
                     )
                   );
                 default: //Display card when loaded
