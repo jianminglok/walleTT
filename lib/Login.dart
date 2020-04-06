@@ -183,7 +183,14 @@ class _LoginState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Padding (
-                    padding: EdgeInsets.only(top: 50.0),
+                    padding: EdgeInsets.only(top: 25.0),
+                  ),
+                  ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 300),
+                      child: Image.asset("assets/graphics/logo.png"),
+                  ),
+                  Padding (
+                    padding: EdgeInsets.only(top: 25.0),
                   ),
                   Text(
                     "Welcome Back",
@@ -251,11 +258,6 @@ class _LoginState extends State<LoginPage> {
                     ),
                   ),
                   SizedBox(height: 30),
-                  Image(
-                    image: AssetImage(
-                      'assets/graphics/fingerprint.png',
-                    ),
-                  ),
                 ],
               ),
             ),
