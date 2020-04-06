@@ -718,7 +718,7 @@ class _PaymentState extends State<Payment> {
                                       color: Colors.white, fontSize: 18.0)),
                               onPressed: () {
                                 var map = new Map<String, dynamic>();
-                                map['userId'] = id;
+                                map['userId'] = 'U' + id;
                                 map['storeId'] =
                                     storeId; //change to storeId later
                                 map['time'] = DateFormat('yyyy-MM-dd HH:mm:ss')
@@ -743,7 +743,7 @@ class _PaymentState extends State<Payment> {
 
                                 var balanceMap = new Map<String, dynamic>();
                                 balanceMap['id'] =
-                                    id;
+                                    'U' + id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
