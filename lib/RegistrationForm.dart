@@ -107,6 +107,7 @@ class _CreateFormState extends State<CreateForm> {
           }
 
           _refreshBalance();
+          _refreshHistory();
 
           status = regStatus;
         } catch (e) {
@@ -124,6 +125,11 @@ class _CreateFormState extends State<CreateForm> {
   void _refreshBalance() {
     final appState = Provider.of<AppState>(context, listen: false);
     appState.refreshUserData();
+  }
+
+  Future<void> _refreshHistory() async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshUserHistory();
   }
 
   void goBack() {

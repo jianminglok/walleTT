@@ -91,6 +91,7 @@ class _PaymentState extends State<Payment> {
                 });
 
                 _refreshBalance();
+                _refreshHistory();
               }
 
               status = topupStatus;
@@ -181,8 +182,14 @@ class _PaymentState extends State<Payment> {
     appState.refreshUserData();
   }
 
+  Future<void> _refreshHistory() async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshUserHistory();
+  }
+
   Future<List<String>> _getStoredData() async {
     //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     agentId = prefs.getString('id');

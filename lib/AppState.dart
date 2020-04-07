@@ -5,11 +5,14 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Transaction.dart';
+
 class AppState with ChangeNotifier {
   AppState();
 
   var _jsonResonseUser;
   List<dynamic> _strings = [];
+  List<Transaction> users = [];
   bool _isFetchingUser = false;
 
   bool get isFetchingUser => _isFetchingUser;
@@ -19,6 +22,7 @@ class AppState with ChangeNotifier {
 
   Future<List<String>> getUserData() async {
     //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     agentId = prefs.getString('id');
@@ -29,6 +33,7 @@ class AppState with ChangeNotifier {
 
   Future<List<String>> refreshUserData() async {
     //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     agentId = prefs.getString('id');
@@ -37,10 +42,140 @@ class AppState with ChangeNotifier {
     _refreshUserInfo();
   }
 
-  Future<List<dynamic>> _getUserInfo() async {
-
+  Future<List<String>> getUserHistory() async {
+    //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
+    agentId = prefs.getString('id');
+    agentSecret = prefs.getString('secret');
+
+    _getUserHistory();
+  }
+
+  Future<List<String>> refreshUserHistory() async {
+    //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    agentId = prefs.getString('id');
+    agentSecret = prefs.getString('secret');
+
+    _refreshUserHistory();
+  }
+
+  Future<List<Transaction>> _getUserHistory() async { //Do verification before getting list of transactions
+
+    var loginMap = new Map<String, dynamic>();
+    loginMap['USER'] = agentId; //Change to storeId later
+    loginMap['PASS'] = agentSecret; //Change to storeSecret later
+    loginMap['type'] = 'topuphistory';
+
+    FormData loginData = new FormData.fromMap(loginMap);
+
+    try {
+      Response response = await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      var jsonData = json.decode(response.toString());
+
+      String loginStatus = jsonData["status"];
+      String status;
+
+      if(loginStatus == 'ok') { //If verification is successful
+
+        _isFetchingUser = true;
+
+        var map = new Map<String, dynamic>();
+        map['id'] = agentId; //change to storeId later
+        map['type'] = 'topuphistory';
+
+        FormData formData = new FormData.fromMap(map);
+
+        try {
+          Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+
+          var jsonData = json.decode(response.toString());
+
+          users = [];
+
+          for (var i in jsonData) {
+            Transaction user = Transaction(
+                int.parse(i["id"]), double.parse(i["amount"]), i["time"],
+                i["user"]["id"], i["user"]["name"], i["remark"], i["cleared"]);
+
+            users.add(user);
+          }
+
+          _isFetchingUser = false;
+          notifyListeners();
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
+      }
+
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<Transaction>> _refreshUserHistory() async { //Do verification before getting list of transactions
+
+    var loginMap = new Map<String, dynamic>();
+    loginMap['USER'] = agentId; //Change to storeId later
+    loginMap['PASS'] = agentSecret; //Change to storeSecret later
+    loginMap['type'] = 'topuphistory';
+
+    FormData loginData = new FormData.fromMap(loginMap);
+
+    try {
+      Response response = await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      var jsonData = json.decode(response.toString());
+
+      String loginStatus = jsonData["status"];
+      String status;
+
+      if(loginStatus == 'ok') { //If verification is successful
+
+        _isFetchingUser = true;
+        notifyListeners();
+
+        var map = new Map<String, dynamic>();
+        map['id'] = agentId; //change to storeId later
+        map['type'] = 'topuphistory';
+
+        FormData formData = new FormData.fromMap(map);
+
+        try {
+          Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+
+          var jsonData = json.decode(response.toString());
+
+          users = [];
+
+          for (var i in jsonData) {
+            Transaction user = Transaction(
+                int.parse(i["id"]), double.parse(i["amount"]), i["time"],
+                i["user"]["id"], i["user"]["name"], i["remark"], i["cleared"]);
+
+            users.add(user);
+          }
+
+          _isFetchingUser = false;
+          notifyListeners();
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
+      }
+
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<dynamic>> _getUserInfo() async {
     var loginMap = new Map<String, dynamic>();
     loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
@@ -60,8 +195,6 @@ class AppState with ChangeNotifier {
       _strings.add(_jsonResonseUser['name']);
       _strings.add(_jsonResonseUser['balance']);
 
-      print(_jsonResonseUser['balance']);
-
       _isFetchingUser = false;
       notifyListeners();
 
@@ -71,7 +204,6 @@ class AppState with ChangeNotifier {
   }
 
   Future<List<dynamic>> _refreshUserInfo() async {
-
     var loginMap = new Map<String, dynamic>();
     loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
@@ -92,8 +224,6 @@ class AppState with ChangeNotifier {
       _strings.add(_jsonResonseUser['name']);
       _strings.add(_jsonResonseUser['balance']);
 
-      print(_jsonResonseUser['balance']);
-
       _isFetchingUser = false;
       notifyListeners();
 
@@ -107,5 +237,12 @@ class AppState with ChangeNotifier {
      return _strings;
    }
    return null;
+  }
+
+  List<dynamic> getUserHistoryJson() {
+    if(users != null) {
+      return users;
+    }
+    return null;
   }
 }
