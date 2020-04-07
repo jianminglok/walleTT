@@ -8,10 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
+import 'AppState.dart';
 import 'Balance.dart';
 import 'Freeze.dart';
 import 'Login.dart';
@@ -86,11 +88,9 @@ class _PaymentState extends State<Payment> {
               if (topupStatus == 'successful') {
                 setState(() {
                   _amountController.text = '';
-
-                  setState(() {
-                    _sharedStrings = _refreshBalance();
-                  });
                 });
+
+                _refreshBalance();
               }
 
               status = topupStatus;
@@ -171,84 +171,35 @@ class _PaymentState extends State<Payment> {
     );
   }
 
-  Future<List<String>> _getUserData() async {
+  void _getBalance() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.getUserData();
+  }
+
+  void _refreshBalance() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshUserData();
+  }
+
+  Future<List<String>> _getStoredData() async {
     //Get store id etc
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     agentId = prefs.getString('id');
     agentSecret = prefs.getString('secret');
-
-    setState(() {
-      _sharedStrings = _getStoreInfo();
-    });
-  }
-
-  Future<List<String>> _getStoreInfo() async {
-    //Get store balance and name
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var loginMap = new Map<String, dynamic>();
-    loginMap['USER'] = agentId; //Change to storeId later
-    loginMap['PASS'] = agentSecret; //Change to storeSecret later
-    loginMap['type'] = 'login';
-
-    FormData loginData = new FormData.fromMap(loginMap);
-
-    try {
-      Response response =
-          await Dio().post("http://10.0.88.178/verify.php", data: loginData);
-      var jsonData = json.decode(response.toString());
-
-      List<String> strings = [];
-      agentName = prefs.getString('name');
-      agentBalance = jsonData['balance'].toString();
-
-      strings.add(agentName);
-      strings.add(agentBalance);
-
-      return strings;
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<List<String>> _refreshBalance() async {
-    //Refresh store balance and name after payment complete
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var loginMap = new Map<String, dynamic>();
-    loginMap['USER'] = 'A001'; //Change to storeId later
-    loginMap['PASS'] = 'A001'; //Change to storeSecret later
-    loginMap['type'] = 'login';
-
-    FormData loginData = new FormData.fromMap(loginMap);
-
-    try {
-      Response response =
-          await Dio().post("http://10.0.88.178/verify.php", data: loginData);
-      var jsonData = json.decode(response.toString());
-
-      List<String> strings = [];
-      agentName = prefs.getString('name');
-      agentBalance = jsonData['balance'].toString();
-
-      strings.add(agentName);
-      strings.add(agentBalance);
-
-      return strings;
-    } catch (e) {
-      print(e);
-    }
   }
 
   @override
   void initState() {
     super.initState();
-    _getUserData();
+    _getStoredData();
+    _getBalance();
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -260,15 +211,25 @@ class _PaymentState extends State<Payment> {
                 end: Alignment.bottomLeft,
                 stops: [0.1, 0.6],
                 colors: [
-                  Theme.of(context).primaryColor,
-                  Theme.of(context).primaryColor,
+                  Theme
+                      .of(context)
+                      .primaryColor,
+                  Theme
+                      .of(context)
+                      .primaryColor,
                 ],
               ),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.elliptical(
-                    MediaQuery.of(context).size.width * 0.50, 18),
+                    MediaQuery
+                        .of(context)
+                        .size
+                        .width * 0.50, 18),
                 bottomRight: Radius.elliptical(
-                    MediaQuery.of(context).size.width * 0.50, 18),
+                    MediaQuery
+                        .of(context)
+                        .size
+                        .width * 0.50, 18),
               ),
             ),
           ),
@@ -304,20 +265,8 @@ class _PaymentState extends State<Payment> {
               SizedBox(
                 height: 185,
                 child: Container(
-                  padding: EdgeInsets.only(top: 65.0),
-                  child: FutureBuilder<List<String>>(
-                      future: _sharedStrings,
-                      builder: (context, snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.none:
-                          case ConnectionState.waiting:
-                            return Center();
-                          default:
-                            return TabsContainer(
-                                name: snapshot.data[0],
-                                balance: snapshot.data[1]);
-                        }
-                      }),
+                    padding: EdgeInsets.only(top: 65.0),
+                    child: TabsContainer()
                 ),
               ),
               Container(
@@ -442,11 +391,11 @@ class _PaymentState extends State<Payment> {
                                   shrinkWrap: true,
                                   physics: NeverScrollableScrollPhysics(),
                                   gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                          crossAxisCount: 3,
-                                          childAspectRatio: 2,
-                                          mainAxisSpacing: 0.6,
-                                          crossAxisSpacing: 0.6),
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      childAspectRatio: 2,
+                                      mainAxisSpacing: 0.6,
+                                      crossAxisSpacing: 0.6),
                                   itemCount: 12,
                                   itemBuilder: (_, index) =>
                                       _buildButton(index)),
@@ -688,8 +637,10 @@ class _PaymentState extends State<Payment> {
                                                                     children: <
                                                                         Widget>[
                                                                       Center(
-                                                                        child:
-                                                                        CircularProgressIndicator(),
+                                                                          child: SpinKitDoubleBounce(
+                                                                            color: Theme.of(context).primaryColor,
+                                                                            size: 50.0,
+                                                                          )
                                                                       )
                                                                     ]);
                                                               default: //Display card when loaded

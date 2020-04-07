@@ -9,6 +9,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'AppState.dart';
 import 'Topup.dart';
 
 // TODO: refactor this monstrosity of a class
@@ -96,8 +97,6 @@ class _CreateFormState extends State<CreateForm> {
 
           String regStatus = response.toString();
 
-          //Transactions().checkOrderLength();
-
           if (regStatus == 'ok') {
             setState(() {
               _textControllers[0].text = '';
@@ -107,7 +106,7 @@ class _CreateFormState extends State<CreateForm> {
             });
           }
 
-          print(regStatus);
+          _refreshBalance();
 
           status = regStatus;
         } catch (e) {
@@ -120,6 +119,11 @@ class _CreateFormState extends State<CreateForm> {
     } catch (e) {
       print(e);
     }
+  }
+
+  void _refreshBalance() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshUserData();
   }
 
   void goBack() {
@@ -419,8 +423,10 @@ class _CreateFormState extends State<CreateForm> {
                                                                                         children: <
                                                                                             Widget>[
                                                                                           Center(
-                                                                                            child:
-                                                                                            CircularProgressIndicator(),
+                                                                                              child: SpinKitDoubleBounce(
+                                                                                                color: Theme.of(context).primaryColor,
+                                                                                                size: 50.0,
+                                                                                              )
                                                                                           )
                                                                                         ]);
                                                                                   default: //Display card when loaded

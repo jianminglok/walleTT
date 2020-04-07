@@ -326,8 +326,10 @@ class _FreezeFormState extends State<FreezeForm> {
                                                                                       children: <
                                                                                           Widget>[
                                                                                         Center(
-                                                                                          child:
-                                                                                          CircularProgressIndicator(),
+                                                                                            child: SpinKitDoubleBounce(
+                                                                                              color: Theme.of(context).primaryColor,
+                                                                                              size: 50.0,
+                                                                                            )
                                                                                         )
                                                                                       ]);
                                                                                 default: //Display card when loaded

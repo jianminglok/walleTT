@@ -8,8 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
+
+import 'AppState.dart';
 
 class Balance extends StatefulWidget {
   Balance({Key key}) : super(key: key);
@@ -92,6 +95,11 @@ class _BalanceState extends State<Balance> {
   void initState() {
     super.initState();
     _future = _getUserData();
+  }
+
+  void _scan2() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshUserData();
   }
 
   void _scan() async {

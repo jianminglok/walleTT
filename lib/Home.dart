@@ -1,9 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:walleTT/Register.dart';
 import 'package:walleTT/Transactions.dart';
 import 'package:walleTT/colors.dart';
 
+import 'AppState.dart';
 import 'Balance.dart';
 import 'Topup.dart';
 
@@ -57,7 +59,10 @@ class Home extends StatelessWidget {
           ),
         ),
       ),
-      home: HomePage(title: 'walleTT Home Page'),
+        home: ChangeNotifierProvider<AppState>(
+          create: (_) => AppState(),
+          child: HomePage(title: 'walleTT Home Page'),
+        )
     );
   }
 }
