@@ -8,10 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
+import 'AppState.dart';
+import 'Home.dart';
 import 'Login.dart';
 
 import 'Product.dart';
@@ -58,7 +61,7 @@ class _PaymentState extends State<Payment> {
   Future<String> _verify(formData, paymentData, balanceData, _amount) async { //Do verification when submitting payment
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: formData);
+          await Dio().post(Home.serverUrl + "process.php", data: formData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -67,7 +70,7 @@ class _PaymentState extends State<Payment> {
       if (loginStatus == 'store') { //If verification successful
         try {
           Response response = await Dio()
-              .post("http://10.0.88.178/process.php", data: balanceData);
+              .post(Home.serverUrl + "process.php", data: balanceData);
           var jsonData = json.decode(response.toString());
 
           int balance = jsonData["balance"];
@@ -78,7 +81,7 @@ class _PaymentState extends State<Payment> {
               if (balance - int.parse(_amount) >= 0) { //If user has enough balance
                 try {
                   Response response = await Dio()
-                      .post("http://10.0.88.178/process.php", data: paymentData);
+                      .post(Home.serverUrl + "process.php", data: paymentData);
                   var jsonData = json.decode(response.toString());
 
                   String paymentStatus = jsonData["status"];
@@ -94,9 +97,8 @@ class _PaymentState extends State<Payment> {
                         _amountController.text = '0';
                       }
 
-                      setState(() {
-                        _sharedStrings = _refreshStoreInfo();
-                      });
+                      _refreshBalance();
+                      _refreshHistory();
                     });
                   }
 
@@ -138,7 +140,7 @@ class _PaymentState extends State<Payment> {
 
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: loginData);
+          await Dio().post(Home.serverUrl + "process.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -153,7 +155,7 @@ class _PaymentState extends State<Payment> {
 
         try {
           Response response = await Dio()
-              .post("http://10.0.88.178/process.php", data: formData);
+              .post(Home.serverUrl + "process.php", data: formData);
 
           var jsonData = json.decode(response.toString());
 
@@ -196,83 +198,37 @@ class _PaymentState extends State<Payment> {
     });
   }
 
-  Future<List<String>> _getUserData() async { //Get store id etc
+  void _getBalance() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.getShopInfo();
+  }
+
+  void _refreshBalance() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshShopInfo();
+  }
+
+  Future<void> _refreshHistory() async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshShopHistory();
+  }
+
+  Future<List<String>> _getStoredData() async { //Get store id etc
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     storeId = prefs.getString('id');
-    storeStatus = prefs.getString('status');
     storeSecret = prefs.getString('secret');
 
     setState(() {
-      _sharedStrings = _getStoreInfo();
       _future = _getProducts();
     });
-  }
-
-  Future<List<String>> _getStoreInfo() async { //Get store balance and name
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
-    loginMap['type'] = 'login';
-
-    FormData loginData = new FormData.fromMap(loginMap);
-
-    try {
-      Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: loginData);
-      var jsonData = json.decode(response.toString());
-
-      List<String> strings = [];
-      storeName = prefs.getString('name');
-      storeBalance = jsonData['balance'].toString();
-
-      strings.add(storeName);
-      strings.add(storeBalance);
-
-      prefs.setString('balance', storeBalance);
-
-      return strings;
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Future<List<String>> _refreshStoreInfo() async { //Refresh store balance and name after payment complete
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
-    loginMap['type'] = 'login';
-
-    FormData loginData = new FormData.fromMap(loginMap);
-
-    try {
-      Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: loginData);
-      var jsonData = json.decode(response.toString());
-
-      List<String> strings = [];
-      storeName = prefs.getString('name');
-      storeBalance = jsonData['balance'].toString();
-
-      strings.add(storeName);
-      strings.add(storeBalance);
-
-      prefs.setString('balance', storeBalance);
-
-      return strings;
-    } catch (e) {
-      print(e);
-    }
   }
 
   @override
   void initState() {
     super.initState();
-    _getUserData();
+    _getStoredData();
+    _getBalance();
   }
 
   @override
@@ -316,21 +272,8 @@ class _PaymentState extends State<Payment> {
               SizedBox(
                 height: 185,
                 child: Container(
-                  padding: EdgeInsets.only(top: 65.0),
-                  child: FutureBuilder<List<String>>(
-                      future: _sharedStrings,
-                      builder: (context, snapshot) {
-                        print(snapshot);
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.none:
-                          case ConnectionState.waiting:
-                            return Center();
-                          default:
-                            return TabsContainer(
-                                name: snapshot.data[0],
-                                balance: snapshot.data[1]);
-                        }
-                      }),
+                    padding: EdgeInsets.only(top: 65.0),
+                    child: TabsContainer()
                 ),
               ),
               Expanded(

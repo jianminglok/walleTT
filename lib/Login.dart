@@ -96,7 +96,7 @@ class _LoginState extends State<LoginPage> {
 
         FormData loginData = new FormData.fromMap(loginMap);
 
-        Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
+        Response response = await Dio().post(Home.serverUrl + "process.php", data: loginData);
         var jsonData = json.decode(response.toString());
 
         String loginStatus = jsonData["status"];

@@ -11,6 +11,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
 
+import 'Home.dart';
+
 class OrderInfo extends StatefulWidget {
   OrderInfo({Key key}) : super(key: key);
 
@@ -39,7 +41,7 @@ class _OrderInfoState extends State<OrderInfo> {
     FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response = await Dio().post("http://10.0.88.178/process.php", data: loginData);
+      Response response = await Dio().post(Home.serverUrl + "process.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -56,7 +58,7 @@ class _OrderInfoState extends State<OrderInfo> {
 
         try {
           Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: formData);
+          await Dio().post(Home.serverUrl + "process.php", data: formData);
 
           var jsonData = json.decode(response.toString());
 
