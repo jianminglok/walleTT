@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'AppState.dart';
+import 'Home.dart';
 import 'Topup.dart';
 
 // TODO: refactor this monstrosity of a class
@@ -81,7 +82,7 @@ class _CreateFormState extends State<CreateForm> {
 
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+          await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -93,7 +94,7 @@ class _CreateFormState extends State<CreateForm> {
         //If verification successful
         try {
           Response response =
-              await Dio().post("http://10.0.88.178/reg.php", data: regData);
+              await Dio().post(Home.serverUrl + "reg.php", data: regData);
 
           String regStatus = response.toString();
 

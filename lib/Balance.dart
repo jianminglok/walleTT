@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
 
 import 'AppState.dart';
+import 'Home.dart';
 
 class Balance extends StatefulWidget {
   Balance({Key key}) : super(key: key);
@@ -44,7 +45,7 @@ class _BalanceState extends State<Balance> {
 
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+          await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -60,7 +61,7 @@ class _BalanceState extends State<Balance> {
 
         try {
           Response response = await Dio()
-              .post("http://10.0.88.178/process.php", data: formData);
+              .post(Home.serverUrl + "process.php", data: formData);
 
           var jsonData = json.decode(response.toString());
 

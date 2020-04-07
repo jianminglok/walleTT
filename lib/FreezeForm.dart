@@ -10,6 +10,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Home.dart';
 import 'Topup.dart';
 
 // TODO: refactor this monstrosity of a class
@@ -73,7 +74,7 @@ class _FreezeFormState extends State<FreezeForm> {
 
     try {
       Response response =
-      await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -85,7 +86,7 @@ class _FreezeFormState extends State<FreezeForm> {
         //If verification successful
         try {
           Response response =
-          await Dio().post("http://10.0.88.178/process.php", data: regData);
+          await Dio().post(Home.serverUrl + "process.php", data: regData);
 
           var jsonData  = json.decode(response.toString());
 

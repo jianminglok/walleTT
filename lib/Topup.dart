@@ -16,6 +16,7 @@ import 'package:intl/intl.dart';
 import 'AppState.dart';
 import 'Balance.dart';
 import 'Freeze.dart';
+import 'Home.dart';
 import 'Login.dart';
 
 import 'Product.dart';
@@ -58,7 +59,7 @@ class _PaymentState extends State<Payment> {
     //Do verification when submitting payment
     try {
       Response response =
-          await Dio().post("http://10.0.88.178/verify.php", data: formData);
+          await Dio().post(Home.serverUrl + "verify.php", data: formData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -68,7 +69,7 @@ class _PaymentState extends State<Payment> {
         //If verification successful
         try {
           Response response = await Dio()
-              .post("http://10.0.88.178/process.php", data: balanceData);
+              .post(Home.serverUrl + "process.php", data: balanceData);
           var jsonData = json.decode(response.toString());
 
           String remark = jsonData["remark"];
@@ -78,7 +79,7 @@ class _PaymentState extends State<Payment> {
             //If user has enough balance
             try {
               Response response = await Dio()
-                  .post("http://10.0.88.178/process.php", data: topupData);
+                  .post(Home.serverUrl + "process.php", data: topupData);
               var jsonData = json.decode(response.toString());
 
               String topupStatus = jsonData["status"];

@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'Home.dart';
 import 'Transaction.dart';
 
 class AppState with ChangeNotifier {
@@ -74,7 +75,7 @@ class AppState with ChangeNotifier {
     FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response = await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      Response response = await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -91,7 +92,7 @@ class AppState with ChangeNotifier {
         FormData formData = new FormData.fromMap(map);
 
         try {
-          Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+          Response response = await Dio().post(Home.serverUrl + "process.php", data: formData);
 
           var jsonData = json.decode(response.toString());
 
@@ -129,7 +130,7 @@ class AppState with ChangeNotifier {
     FormData loginData = new FormData.fromMap(loginMap);
 
     try {
-      Response response = await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      Response response = await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
@@ -147,7 +148,7 @@ class AppState with ChangeNotifier {
         FormData formData = new FormData.fromMap(map);
 
         try {
-          Response response = await Dio().post("http://10.0.88.178/process.php", data: formData);
+          Response response = await Dio().post(Home.serverUrl + "process.php", data: formData);
 
           var jsonData = json.decode(response.toString());
 
@@ -187,7 +188,7 @@ class AppState with ChangeNotifier {
 
     try {
       Response response =
-      await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       _jsonResonseUser  = json.decode(response.toString());
 
       _strings = [];
@@ -216,7 +217,7 @@ class AppState with ChangeNotifier {
 
     try {
       Response response =
-      await Dio().post("http://10.0.88.178/verify.php", data: loginData);
+      await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       _jsonResonseUser  = json.decode(response.toString());
 
       _strings = [];
