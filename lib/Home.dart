@@ -10,7 +10,7 @@ import 'Payment.dart';
 class Home extends StatelessWidget {
   // This widget is the root of your application.
 
-  static String serverUrl = 'http://10.0.88.178/';
+  static String serverUrl = 'https://sttss.000webhostapp.com/';
 
   @override
   Widget build(BuildContext context) {
