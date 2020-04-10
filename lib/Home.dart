@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:walleTT/Transactions.dart';
 import 'package:walleTT/colors.dart';
@@ -14,6 +15,9 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     return MaterialApp(
       title: 'walleTT',
       theme: ThemeData(
@@ -116,7 +120,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) { //Bottom Navigation Widget
 
     return Scaffold(
-
       bottomNavigationBar: _bottomNavigationBar(_selectedIndex),
       body: IndexedStack(
         index: _selectedIndex,
