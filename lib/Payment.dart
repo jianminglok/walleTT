@@ -868,8 +868,16 @@ class _PaymentState extends State<Payment> {
               ),
               CupertinoDialogAction(
                 child: Text("Logout"),
-                onPressed: () {
-
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences
+                      .getInstance();
+                  prefs.remove('id');
+                  prefs.remove('name');
+                  prefs.remove('status');
+                  prefs.remove('secret');
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(
+                          builder: (BuildContext ctx) => Login()));
                 },
               ),
             ],
