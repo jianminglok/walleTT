@@ -7,9 +7,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:walleTT/pin-pad/numpad.dart';
+import 'package:walleTT/pin-pad/numpad_controller.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
@@ -20,6 +23,7 @@ import 'Home.dart';
 import 'Login.dart';
 
 import 'Product.dart';
+import 'SizeConfig.dart';
 import 'Transactions.dart';
 
 class Payment extends StatefulWidget {
@@ -99,8 +103,9 @@ class _PaymentState extends State<Payment> {
             } catch (e) {
               print(e);
             }
-          } else if  (remark == 'frozen') {
-            status = 'Account is frozen. Please contact administrator immediately.';
+          } else if (remark == 'frozen') {
+            status =
+                'Account is frozen. Please contact administrator immediately.';
           } else {
             status = jsonData['status'];
           }
@@ -128,7 +133,7 @@ class _PaymentState extends State<Payment> {
               : index == 9
                   ? Semantics()
                   : Text(_list[index].toString(),
-                      style: TextStyle(fontSize: 26.0)),
+                      style: TextStyle(fontSize: 65.ssp)),
         ),
         onLongPress: () {
           if (index == 11) {
@@ -206,231 +211,116 @@ class _PaymentState extends State<Payment> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = Provider.of<AppState>(context);
+    ScreenUtil.init(context, width: 1080, height: 2248);
 
     return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          Container(
-            height: 185,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-                stops: [0.1, 0.6],
-                colors: [
-                  Theme
-                      .of(context)
-                      .primaryColor,
-                  Theme
-                      .of(context)
-                      .primaryColor,
-                ],
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.elliptical(
-                    MediaQuery
-                        .of(context)
-                        .size
-                        .width * 0.50, 18),
-                bottomRight: Radius.elliptical(
-                    MediaQuery
-                        .of(context)
-                        .size
-                        .width * 0.50, 18),
-              ),
+        body: Stack(
+      children: <Widget>[
+        Container(
+          height: 460.h,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              stops: [0.1, 0.6],
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).primaryColor,
+              ],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.elliptical(
+                  MediaQuery.of(context).size.width * 0.50, 18),
+              bottomRight: Radius.elliptical(
+                  MediaQuery.of(context).size.width * 0.50, 18),
             ),
           ),
-          Positioned(
-            top: 30,
-            left: 5,
-            child: IconButton(
-              color: Colors.white,
-              icon: Icon(Icons.exit_to_app),
-              onPressed: () async {
-                //Logout
-                _showLogoutDialog(context);
-              },
-            ),
+        ),
+        Positioned(
+          top: 30,
+          left: 5,
+          child: IconButton(
+            color: Colors.white,
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () async {
+              //Logout
+              _showLogoutDialog(context);
+            },
           ),
-          Positioned(
-            top: 30,
-            right: 5,
-            child: IconButton(
-              color: Colors.white,
-              icon: Icon(Icons.error_outline),
-              onPressed: () {
-                Navigator.push( //Open QR Scanner
-                  context,
-                  MaterialPageRoute(builder: (context) => Freeze(),
-                  ),
-                );
-              },
-            ),
-          ),
-          Column(
-            children: <Widget>[
-              SizedBox(
-                height: 185,
-                child: Container(
-                    padding: EdgeInsets.only(top: 65.0),
-                    child: TabsContainer()
+        ),
+        Positioned(
+          top: 30,
+          right: 5,
+          child: IconButton(
+            color: Colors.white,
+            icon: Icon(Icons.error_outline),
+            onPressed: () {
+              Navigator.push(
+                //Open QR Scanner
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Freeze(),
                 ),
-              ),
-              Container(
-                  margin: EdgeInsets.only(top: 22.5),
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.only(bottom: 10.0),
-                        child: Text('How much?',
+              );
+            },
+          ),
+        ),
+        Column(
+          children: <Widget>[
+            Container(
+                height: 460.h,
+                padding: EdgeInsets.only(top: ScreenUtil.statusBarHeight),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(child: TabsContainer()),
+                  ],
+                )),
+            Expanded(
+                child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 50.w),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text('How much?',
                             style: TextStyle(
-                                fontSize: 40.0, fontWeight: FontWeight.w700)),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(bottom: 20.0),
-                        child: Row(
-                          children: <Widget>[
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ActionChip(
-                                label: Text('5'),
-                                backgroundColor: Colors.white,
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _amountController.text = '5';
-                                },
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ActionChip(
-                                label: Text('10'),
-                                backgroundColor: Colors.white,
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _amountController.text = '10';
-                                },
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ActionChip(
-                                label: Text('20'),
-                                backgroundColor: Colors.white,
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _amountController.text = '20';
-                                },
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ActionChip(
-                                label: Text('50'),
-                                backgroundColor: Colors.white,
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _amountController.text = '50';
-                                },
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: ActionChip(
-                                label: Text('100'),
-                                backgroundColor: Colors.white,
-                                elevation: 1,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(8),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  _amountController.text = '100';
-                                },
-                              ),
-                            ),
-                          ],
+                                fontSize: 100.ssp,
+                                fontWeight: FontWeight.w700)),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 3.h),
                         ),
-                      ),
-                      TextField(
-                        enabled: false,
-                        decoration: InputDecoration(
-                            contentPadding: EdgeInsets.all(12),
-                            prefixIcon: Padding(
-                                padding: EdgeInsets.all(15),
-                                child: Text('RM'))),
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.w600),
-                        controller: _amountController,
-                        keyboardType: TextInputType.numberWithOptions(
-                          decimal: true,
+                        SizedBox(
+                          height: 990.h,
+                          child: NumPad(
+                            /* numpad must always have a controller attached to it. */
+                            controller: _amountController,
+                          ),
                         ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 1.0, bottom: 30.0),
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: <Widget>[
-                              GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      childAspectRatio: 2,
-                                      mainAxisSpacing: 0.6,
-                                      crossAxisSpacing: 0.6),
-                                  itemCount: 12,
-                                  itemBuilder: (_, index) =>
-                                      _buildButton(index)),
-                            ]),
-                      ),
-                      SizedBox(
-                          width: double.infinity,
-                          height: 50.0,
-                          child: RaisedButton.icon(
-                            icon: Icon(
-                              Icons.center_focus_strong,
-                              color: Colors.white,
-                            ),
-                            label: Text("Scan QR Code",
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 18.0)),
-                            onPressed: () {
-                              _scan(_amountController.text, context);
-                            },
-                          ))
-                    ],
-                  ))
-            ],
-          )
-        ],
-      ),
-    );
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 35.h),
+                        ),
+                        SizedBox(
+                            width: double.infinity,
+                            height: 120.h,
+                            child: RaisedButton.icon(
+                              icon: Icon(
+                                Icons.center_focus_strong,
+                                color: Colors.white,
+                              ),
+                              label: Text("Scan QR Code",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 54.ssp)),
+                              onPressed: () {
+                                _scan(_amountController.text, context);
+                              },
+                            ))
+                      ],
+                    )))
+          ],
+        )
+      ],
+    ));
   }
 
   static Future<String> scan(BuildContext context) async {
@@ -451,6 +341,7 @@ class _PaymentState extends State<Payment> {
 
   void _scan(String _amount, BuildContext context) async {
     //Show dialog after scan complete
+    print(_amount);
     if (_amount.isNotEmpty && int.parse(_amount) > 0) {
       String id = await scan(context);
       String displayAmount =
@@ -551,7 +442,8 @@ class _PaymentState extends State<Payment> {
                             Text(
                               displayAmount,
                               style: TextStyle(
-                                  fontSize: 60.0, fontWeight: FontWeight.w800),
+                                  fontSize: 150.ssp,
+                                  fontWeight: FontWeight.w800),
                             ),
                           ],
                         ),
@@ -579,8 +471,7 @@ class _PaymentState extends State<Payment> {
                                 map['amount'] = _amount;
                                 map['type'] = 'topup';
 
-                                FormData topupData =
-                                new FormData.fromMap(map);
+                                FormData topupData = new FormData.fromMap(map);
 
                                 var loginMap = new Map<String, dynamic>();
                                 loginMap['USER'] =
@@ -590,18 +481,18 @@ class _PaymentState extends State<Payment> {
                                 loginMap['type'] = 'topup';
 
                                 FormData loginData =
-                                new FormData.fromMap(loginMap);
+                                    new FormData.fromMap(loginMap);
 
                                 var balanceMap = new Map<String, dynamic>();
                                 balanceMap['id'] = 'U' + id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
-                                new FormData.fromMap(balanceMap);
+                                    new FormData.fromMap(balanceMap);
 
                                 if (makingPayment == false) {
-                                  _verifyResult = _verify(loginData,
-                                      topupData, balanceData, _amount);
+                                  _verifyResult = _verify(loginData, topupData,
+                                      balanceData, _amount);
                                   Navigator.pop(context);
 
                                   showModalBottomSheet(
@@ -624,114 +515,115 @@ class _PaymentState extends State<Payment> {
                                                       26.0),
                                                   child: Center(
                                                       child:
-                                                      FutureBuilder<String>(
-                                                          future:
-                                                          _verifyResult,
-                                                          builder: (context,
-                                                              snapshot) {
-                                                            switch (snapshot
-                                                                .connectionState) {
-                                                              case ConnectionState
-                                                                  .none:
-                                                              case ConnectionState
-                                                                  .waiting: //Display progress circle while loading
-                                                                return Column(
-                                                                    crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .stretch,
-                                                                    mainAxisSize:
-                                                                    MainAxisSize
-                                                                        .max,
-                                                                    children: <
-                                                                        Widget>[
-                                                                      Center(
-                                                                          child: SpinKitDoubleBounce(
-                                                                            color: Theme.of(context).primaryColor,
-                                                                            size: 50.0,
-                                                                          )
-                                                                      )
-                                                                    ]);
-                                                              default: //Display card when loaded
-                                                                return snapshot.data ==
-                                                                    'successful'
-                                                                    ? Column(
-                                                                    crossAxisAlignment: CrossAxisAlignment
-                                                                        .stretch,
-                                                                    mainAxisSize: MainAxisSize
-                                                                        .max,
-                                                                    children: <
-                                                                        Widget>[
-                                                                      Center(
-                                                                        child: Icon(
-                                                                          Icons.check,
-                                                                          color: Color(0xff03da9d),
-                                                                          size: 60.0,
-                                                                        ),
-                                                                      ),
-                                                                      Center(
-                                                                        child: Text(
-                                                                          'Successful',
-                                                                          style: Theme.of(context).textTheme.title,
-                                                                          textAlign: TextAlign.center,
-                                                                        ),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(top: 24.0),
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                                        children: <Widget>[
-                                                                          RaisedButton(
-                                                                            child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                                                                            onPressed: () {
-                                                                              setState(() {
-                                                                                makingPayment = false;
-                                                                              });
-                                                                              Navigator.pop(context);
-                                                                            },
-                                                                          )
-                                                                        ],
-                                                                      )
-                                                                    ])
-                                                                    : Column(
-                                                                    crossAxisAlignment:
-                                                                    CrossAxisAlignment.stretch,
-                                                                    mainAxisSize: MainAxisSize.max,
-                                                                    children: <Widget>[
-                                                                      Center(
-                                                                        child: Icon(
-                                                                          Icons.clear,
-                                                                          color: Theme.of(context).primaryColor,
-                                                                          size: 60.0,
-                                                                        ),
-                                                                      ),
-                                                                      Center(
-                                                                        child: Text(
-                                                                          snapshot.data.toString(),
-                                                                          style: Theme.of(context).textTheme.title,
-                                                                          textAlign: TextAlign.center,
-                                                                        ),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(top: 24.0),
-                                                                      ),
-                                                                      Row(
-                                                                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                                                        children: <Widget>[
-                                                                          RaisedButton(
-                                                                            child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
-                                                                            onPressed: () {
-                                                                              setState(() {
-                                                                                makingPayment = false;
-                                                                              });
-                                                                              Navigator.pop(context);
-                                                                            },
-                                                                          )
-                                                                        ],
-                                                                      )
-                                                                    ]);
-                                                            }
-                                                          }))))
+                                                          FutureBuilder<String>(
+                                                              future:
+                                                                  _verifyResult,
+                                                              builder: (context,
+                                                                  snapshot) {
+                                                                switch (snapshot
+                                                                    .connectionState) {
+                                                                  case ConnectionState
+                                                                      .none:
+                                                                  case ConnectionState
+                                                                      .waiting: //Display progress circle while loading
+                                                                    return Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment
+                                                                                .stretch,
+                                                                        mainAxisSize:
+                                                                            MainAxisSize
+                                                                                .max,
+                                                                        children: <
+                                                                            Widget>[
+                                                                          Center(
+                                                                              child: SpinKitDoubleBounce(
+                                                                            color:
+                                                                                Theme.of(context).primaryColor,
+                                                                            size:
+                                                                                50.0,
+                                                                          ))
+                                                                        ]);
+                                                                  default: //Display card when loaded
+                                                                    return snapshot.data ==
+                                                                            'successful'
+                                                                        ? Column(
+                                                                            crossAxisAlignment: CrossAxisAlignment
+                                                                                .stretch,
+                                                                            mainAxisSize: MainAxisSize
+                                                                                .max,
+                                                                            children: <
+                                                                                Widget>[
+                                                                                Center(
+                                                                                  child: Icon(
+                                                                                    Icons.check,
+                                                                                    color: Color(0xff03da9d),
+                                                                                    size: 60.0,
+                                                                                  ),
+                                                                                ),
+                                                                                Center(
+                                                                                  child: Text(
+                                                                                    'Successful',
+                                                                                    style: Theme.of(context).textTheme.title,
+                                                                                    textAlign: TextAlign.center,
+                                                                                  ),
+                                                                                ),
+                                                                                Padding(
+                                                                                  padding: const EdgeInsets.only(top: 24.0),
+                                                                                ),
+                                                                                Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                  children: <Widget>[
+                                                                                    RaisedButton(
+                                                                                      child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                                                                      onPressed: () {
+                                                                                        setState(() {
+                                                                                          makingPayment = false;
+                                                                                        });
+                                                                                        Navigator.pop(context);
+                                                                                      },
+                                                                                    )
+                                                                                  ],
+                                                                                )
+                                                                              ])
+                                                                        : Column(
+                                                                            crossAxisAlignment:
+                                                                                CrossAxisAlignment.stretch,
+                                                                            mainAxisSize: MainAxisSize.max,
+                                                                            children: <Widget>[
+                                                                                Center(
+                                                                                  child: Icon(
+                                                                                    Icons.clear,
+                                                                                    color: Theme.of(context).primaryColor,
+                                                                                    size: 60.0,
+                                                                                  ),
+                                                                                ),
+                                                                                Center(
+                                                                                  child: Text(
+                                                                                    snapshot.data.toString(),
+                                                                                    style: Theme.of(context).textTheme.title,
+                                                                                    textAlign: TextAlign.center,
+                                                                                  ),
+                                                                                ),
+                                                                                Padding(
+                                                                                  padding: const EdgeInsets.only(top: 24.0),
+                                                                                ),
+                                                                                Row(
+                                                                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                  children: <Widget>[
+                                                                                    RaisedButton(
+                                                                                      child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                                                                      onPressed: () {
+                                                                                        setState(() {
+                                                                                          makingPayment = false;
+                                                                                        });
+                                                                                        Navigator.pop(context);
+                                                                                      },
+                                                                                    )
+                                                                                  ],
+                                                                                )
+                                                                              ]);
+                                                                }
+                                                              }))))
                                         ]);
                                       });
                                 } else {
@@ -769,7 +661,8 @@ class _PaymentState extends State<Payment> {
         if (Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text("Confirm logout?"),
-            content: Text("You can only perform transactions after you have logged in"),
+            content: Text(
+                "You can only perform transactions after you have logged in"),
             actions: <Widget>[
               CupertinoDialogAction(
                 child: Text("Cancel"),
@@ -779,17 +672,17 @@ class _PaymentState extends State<Payment> {
               ),
               CupertinoDialogAction(
                 child: Text("Logout"),
-                onPressed: () {
-
-                },
+                onPressed: () {},
               ),
             ],
           );
         } else
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text("Confirm logout?"),
-            content: Text("You can only perform transactions after you have logged in"),
+            content: Text(
+                "You can only perform transactions after you have logged in"),
             actions: <Widget>[
               FlatButton(
                 child: Text("Cancel"),
@@ -802,13 +695,16 @@ class _PaymentState extends State<Payment> {
                 child: Text("Logout"),
                 textColor: Colors.red,
                 onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
                   prefs.remove('id');
                   prefs.remove('name');
                   prefs.remove('status');
                   prefs.remove('secret');
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (BuildContext ctx) => Login()));
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext ctx) => Login()));
                 },
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:walleTT/Register.dart';
 import 'package:walleTT/Transactions.dart';
@@ -16,6 +17,9 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     return MaterialApp(
       title: 'walleTT',
       theme: ThemeData(
@@ -113,7 +117,7 @@ class _HomePageState extends State<HomePage> {
       BottomNavigationBarItem(
           icon: Icon(Icons.add), title: Text('Topup')),
       BottomNavigationBarItem(
-          icon: Icon(Icons.center_focus_strong), title: Text('Check Balance')),//Balance Page
+          icon: Icon(Icons.center_focus_strong), title: Text('Balance')),//Balance Page
       BottomNavigationBarItem(
           icon: Icon(Icons.fiber_new), title: Text('Registration')),
       BottomNavigationBarItem(

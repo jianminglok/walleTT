@@ -136,11 +136,12 @@ class _TransactionsState extends State<Transactions> {
                                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                         children: <Widget>[
                                                           Text(
-                                                            appState.getUserHistoryJson()[index].userName + ' (' + appState.getUserHistoryJson()[index].userId + ')',
+                                                            //appState.getUserHistoryJson()[index].userName + ' (' + appState.getUserHistoryJson()[index].userId + ')',
+                                                            appState.getUserHistoryJson()[index].userName, //Not enough space on small phones
                                                             style: Theme.of(context).textTheme.subhead,
                                                           ),
                                                           Text(
-                                                            'Transaction ID: ' + appState.getUserHistoryJson()[index].topupId.toString(),
+                                                            'ID: ' + appState.getUserHistoryJson()[index].topupId.toString(),
                                                             style: Theme.of(context).textTheme.subhead,
                                                           ),
                                                         ],
