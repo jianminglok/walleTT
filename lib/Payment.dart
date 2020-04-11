@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
+import 'package:flutter_screenutil/screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,7 +59,8 @@ class _PaymentState extends State<Payment> {
 
   TextEditingController _amountController = TextEditingController();
 
-  Future<String> _verify(formData, paymentData, balanceData, _amount) async { //Do verification when submitting payment
+  Future<String> _verify(formData, paymentData, balanceData, _amount) async {
+    //Do verification when submitting payment
     try {
       Response response =
           await Dio().post(Home.serverUrl + "process.php", data: formData);
@@ -67,7 +69,8 @@ class _PaymentState extends State<Payment> {
       String loginStatus = jsonData["status"];
       String status;
 
-      if (loginStatus == 'store') { //If verification successful
+      if (loginStatus == 'store') {
+        //If verification successful
         try {
           Response response = await Dio()
               .post(Home.serverUrl + "process.php", data: balanceData);
@@ -76,9 +79,12 @@ class _PaymentState extends State<Payment> {
           int balance = jsonData["balance"];
           String remark = jsonData["remark"];
 
-          if(jsonData["status"] != 'User does not exist!') { //If user from scanned QR code exist
-            if (remark == 'active') { //If user account is active and not frozen
-              if (balance - int.parse(_amount) >= 0) { //If user has enough balance
+          if (jsonData["status"] != 'User does not exist!') {
+            //If user from scanned QR code exist
+            if (remark == 'active') {
+              //If user account is active and not frozen
+              if (balance - int.parse(_amount) >= 0) {
+                //If user has enough balance
                 try {
                   Response response = await Dio()
                       .post(Home.serverUrl + "process.php", data: paymentData);
@@ -110,14 +116,14 @@ class _PaymentState extends State<Payment> {
                 status = 'User does not have enough balance!';
               }
             } else if (remark == 'frozen') {
-              status = 'User account has been frozen. Please contact administrator immediately.';
+              status =
+                  'User account has been frozen. Please contact administrator immediately.';
             } else {
               status = 'User account is not active!';
             }
           } else {
             status = jsonData['status'];
           }
-
         } catch (e) {
           print(e);
         }
@@ -130,7 +136,8 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<Product>> _getProducts() async { //Get list of products
+  Future<List<Product>> _getProducts() async {
+    //Get list of products
     var loginMap = new Map<String, dynamic>();
     loginMap['STORE'] = storeId; //Change to storeId later
     loginMap['PASS'] = storeSecret; //Change to storeSecret later
@@ -154,8 +161,8 @@ class _PaymentState extends State<Payment> {
         FormData formData = new FormData.fromMap(map);
 
         try {
-          Response response = await Dio()
-              .post(Home.serverUrl + "process.php", data: formData);
+          Response response =
+              await Dio().post(Home.serverUrl + "process.php", data: formData);
 
           var jsonData = json.decode(response.toString());
 
@@ -185,7 +192,8 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<Product>> _refresh() async { //Refresh product list
+  Future<List<Product>> _refresh() async {
+    //Refresh product list
     //Refresh list of users from server
     setState(() {
       totalAmount = 0;
@@ -213,7 +221,8 @@ class _PaymentState extends State<Payment> {
     appState.refreshShopHistory();
   }
 
-  Future<List<String>> _getStoredData() async { //Get store id etc
+  Future<List<String>> _getStoredData() async {
+    //Get store id etc
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     storeId = prefs.getString('id');
@@ -233,11 +242,13 @@ class _PaymentState extends State<Payment> {
 
   @override
   Widget build(BuildContext context) {
+    ScreenUtil.init(context, width: 1080, height: 2248);
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
           Container(
-            height: 185,
+            height: ScreenUtil().setHeight(460),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topRight,
@@ -262,33 +273,36 @@ class _PaymentState extends State<Payment> {
             child: IconButton(
               color: Colors.white,
               icon: Icon(Icons.exit_to_app),
-              onPressed: () async { //Logout
+              onPressed: () async {
+                //Logout
                 _showLogoutDialog(context);
               },
             ),
           ),
           Column(
             children: <Widget>[
-              SizedBox(
-                height: 185,
-                child: Container(
-                    padding: EdgeInsets.only(top: 65.0),
-                    child: TabsContainer()
-                ),
-              ),
+              Container(
+                  height: ScreenUtil().setHeight(460),
+                  padding: EdgeInsets.only(top: ScreenUtil.statusBarHeight),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(child: TabsContainer()),
+                    ],
+                  )),
               Expanded(
                 child: Container(
-                    margin: EdgeInsets.only(top: 40.0),
-                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(bottom: 10.0),
-                          child: Text('How much?',
+                        Text('How much?',
                               style: TextStyle(
-                                  fontSize: 40.0, fontWeight: FontWeight.w700)),
+                                  fontSize: 40.0, fontWeight: FontWeight.w700)
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10.0)
                         ),
                         TextField(
                           enabled: false,
@@ -341,6 +355,7 @@ class _PaymentState extends State<Payment> {
                                                                     0,
                                                                     1.25),
                                                             child: SizedBox(
+                                                                height: 123,
                                                                 width: double
                                                                     .infinity,
                                                                 child: Card(
@@ -437,6 +452,22 @@ class _PaymentState extends State<Payment> {
                                                           ))))));
                               }
                             }),
+                           SizedBox(
+                            width: double.infinity,
+                            height: ScreenUtil().setHeight(130),
+                            child: RaisedButton.icon(
+                              icon: Icon(
+                                Icons.center_focus_strong,
+                                color: Colors.white,
+                              ),
+                              label: Text("Scan QR Code",
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: ScreenUtil().setSp(54, allowFontScalingSelf: true))),
+                              onPressed: () {
+                                _scan(_amountController.text, quantities, productsList,
+                                    productsNameList, context);
+                              },
+                            )),
                       ],
                     )),
               )
@@ -444,19 +475,12 @@ class _PaymentState extends State<Payment> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-          onPressed: () {
-            _scan(_amountController.text, quantities, productsList,
-                productsNameList, context);
-          },
-          label: Text("Scan QR Code",
-              style: TextStyle(color: Colors.white, fontSize: 18.0)),
-          icon: Icon(Icons.center_focus_strong)),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
     );
   }
 
-  static Future<String> scan(BuildContext context) async { //Scan QR code
+  static Future<String> scan(BuildContext context) async {
+    //Scan QR code
     try {
       return await BarcodeScanner.scan();
     } catch (e) {
@@ -472,7 +496,8 @@ class _PaymentState extends State<Payment> {
   }
 
   void _scan(
-      String _amount, quantities, products, names, BuildContext context) async { //Show dialog after scan complete
+      String _amount, quantities, products, names, BuildContext context) async {
+    //Show dialog after scan complete
     final idList = [];
     final quantitiesList = [];
     final nameList = [];
@@ -681,17 +706,15 @@ class _PaymentState extends State<Payment> {
                                     new FormData.fromMap(loginMap);
 
                                 var balanceMap = new Map<String, dynamic>();
-                                balanceMap['id'] =
-                                    'U' + id;
+                                balanceMap['id'] = 'U' + id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
-                                new FormData.fromMap(balanceMap);
-
+                                    new FormData.fromMap(balanceMap);
 
                                 if (makingPayment == false) {
-                                  _verifyResult =
-                                      _verify(loginData, paymentData, balanceData, _amount);
+                                  _verifyResult = _verify(loginData,
+                                      paymentData, balanceData, _amount);
                                   Navigator.pop(context);
 
                                   showModalBottomSheet(
@@ -869,13 +892,14 @@ class _PaymentState extends State<Payment> {
               CupertinoDialogAction(
                 child: Text("Logout"),
                 onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences
-                      .getInstance();
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
                   prefs.remove('id');
                   prefs.remove('name');
                   prefs.remove('status');
                   prefs.remove('secret');
-                  Navigator.pushReplacement(context,
+                  Navigator.pushReplacement(
+                      context,
                       MaterialPageRoute(
                           builder: (BuildContext ctx) => Login()));
                 },
@@ -884,8 +908,8 @@ class _PaymentState extends State<Payment> {
           );
         } else
           return AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             title: Text("Confirm logout?"),
             content: Text(
                 "You can only perform transactions after you have logged in"),
@@ -901,13 +925,14 @@ class _PaymentState extends State<Payment> {
                 child: Text("Logout"),
                 textColor: Colors.red,
                 onPressed: () async {
-                  SharedPreferences prefs = await SharedPreferences
-                      .getInstance();
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
                   prefs.remove('id');
                   prefs.remove('name');
                   prefs.remove('status');
                   prefs.remove('secret');
-                  Navigator.pushReplacement(context,
+                  Navigator.pushReplacement(
+                      context,
                       MaterialPageRoute(
                           builder: (BuildContext ctx) => Login()));
                 },
