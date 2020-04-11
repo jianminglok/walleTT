@@ -56,6 +56,7 @@ class _NumPadState extends State<NumPad> with SingleTickerProviderStateMixin {
     ScreenUtil.init(context, width: 1080, height: 2248);
     return Scaffold(
         body: Container(
+
             /* Input text field at the top where the PIN input is displayed. */
             child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),

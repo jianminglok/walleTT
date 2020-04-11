@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/screenutil.dart';
 class NumPadKeyboard extends StatelessWidget {
   var clearKeyBackgroundColor, backKeyBackgroundColor, keyColor, keyFontColor;
   var backKeyFontColor, clearKeyFontColor;
@@ -206,16 +207,13 @@ class NumPadKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
-    var width = screenSize.width;
-    var height = screenSize.height/1.4;
+    ScreenUtil.init(context, width: 1080, height: 2248);
     double margin = 15.0;
 
-    var size = (height / 10);
     return Container(
         margin: EdgeInsets.fromLTRB(margin - 3, 1, margin, 0),
-        height: size,
-        width: (height*1.4/10) + 10,
+        height: (ScreenUtil().setHeight(420))/2.5,
+        width: (ScreenUtil().setWidth(420))/1.75,
         child: Material(
             color: Colors.grey[50],
             child: InkWell(

@@ -287,11 +287,8 @@ class _PaymentState extends State<Payment> {
                             style: TextStyle(
                                 fontSize: 100.ssp,
                                 fontWeight: FontWeight.w700)),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 3.h),
-                        ),
                         SizedBox(
-                          height: 990.h,
+                          height: 1100.h,
                           child: NumPad(
                             /* numpad must always have a controller attached to it. */
                             controller: _amountController,
@@ -302,7 +299,7 @@ class _PaymentState extends State<Payment> {
                         ),
                         SizedBox(
                             width: double.infinity,
-                            height: 120.h,
+                            height: 130.h,
                             child: RaisedButton.icon(
                               icon: Icon(
                                 Icons.center_focus_strong,
