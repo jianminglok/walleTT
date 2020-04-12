@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,8 @@ class _PaymentState extends State<Payment> {
   var storeStatus;
   var storeSecret;
   var storeBalance;
+
+  Future<String> connectivityText;
 
   TextEditingController _amountController = TextEditingController();
 
@@ -238,6 +241,18 @@ class _PaymentState extends State<Payment> {
     super.initState();
     _getStoredData();
     _getBalance();
+    connectivityText = _checkConnectivity();
+  }
+
+  Future<String> _checkConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('sttss.000webhostapp.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        return 'No response from server. Please try again later';
+      }
+    } on SocketException catch (_) {
+      return 'Please make sure you have an active internet connection.';
+    }
   }
 
   @override
@@ -335,6 +350,7 @@ class _PaymentState extends State<Payment> {
                                     ),
                                   );
                                 default: //Display card when loaded
+                                  if (snapshot.data != null) {
                                   return Expanded(
                                       child: Container(
                                           child: RefreshIndicator(
@@ -450,6 +466,25 @@ class _PaymentState extends State<Payment> {
                                                                   ),
                                                                 )),
                                                           ))))));
+                                  }
+                                  else {
+                                    return Expanded(
+                                      child: Center(
+                                          child: FutureBuilder<String>(
+                                            future: connectivityText,
+                                            builder: (context, snapshot) {
+                                              switch(snapshot.hasData) {
+                                                case true:
+                                                  return Text(snapshot.data, textAlign: TextAlign.center);
+                                                case false:
+                                                default:
+                                                  return Text('Waiting for connection from server', textAlign: TextAlign.center);
+                                              }
+                                            }
+                                          )
+                                      )
+                                    );
+                                  }
                               }
                             }),
                            SizedBox(
