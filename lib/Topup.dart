@@ -5,6 +5,7 @@ import 'package:barcode_scan/barcode_scan.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -207,6 +208,25 @@ class _PaymentState extends State<Payment> {
     super.initState();
     _getStoredData();
     _getBalance();
+    _checkConnectivity().then((intenet) {
+      if (intenet != null && intenet) {
+        // Internet Present Case
+      }
+      else {
+        SchedulerBinding.instance.addPostFrameCallback((_) => _showConnectivityDialog());
+      }
+    });
+  }
+
+  Future<bool> _checkConnectivity() async {
+    try {
+      final result = await InternetAddress.lookup('sttss.000webhostapp.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        return true;
+      }
+    } on SocketException catch (_) {
+      return false;
+    }
   }
 
   @override
@@ -702,6 +722,45 @@ class _PaymentState extends State<Payment> {
                       context,
                       MaterialPageRoute(
                           builder: (BuildContext ctx) => Login()));
+                },
+              ),
+            ],
+          );
+      },
+    );
+  }
+
+  void _showConnectivityDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        if (Platform.isIOS) {
+          return CupertinoAlertDialog(
+            title: Text("Error"),
+            content: Text(
+                "Please make sure you have an active internet connection"),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        } else
+          return AlertDialog(
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text("Error"),
+            content: Text(
+                "Please make sure you have an active internet connection"),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("OK"),
+                textColor: Colors.black87,
+                onPressed: () {
+                  Navigator.of(context).pop();
                 },
               ),
             ],
