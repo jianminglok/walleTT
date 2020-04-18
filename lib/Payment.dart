@@ -47,8 +47,6 @@ class _PaymentState extends State<Payment> {
   Future<String> _paymentResult;
   Future<String> _verifyResult;
 
-  var quantities = [];
-  var quantitiesString = [];
   var productsList = [];
   var productsNameList = [];
 
@@ -61,6 +59,8 @@ class _PaymentState extends State<Payment> {
   Future<String> connectivityText;
 
   TextEditingController _amountController = TextEditingController();
+
+  String _amountText = '0';
 
   Future<String> _verify(formData, paymentData, balanceData, _amount) async {
     //Do verification when submitting payment
@@ -100,11 +100,10 @@ class _PaymentState extends State<Payment> {
                   if (paymentStatus == 'successful') {
                     setState(() {
                       totalAmount = 0;
-                      for (var i = 0; i < quantities.length; i++) {
-                        quantitiesString[i] = '0';
-                        quantities[i] = 0;
-                        _amountController.text = '0';
-                      }
+                      _amountText = '0';
+
+                      final appState = Provider.of<AppState>(context, listen: false);
+                      appState.resetProductQuantities();
 
                       _refreshBalance();
                       _refreshHistory();
@@ -139,73 +138,17 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  Future<List<Product>> _getProducts() async {
-    //Get list of products
-    var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = storeId; //Change to storeId later
-    loginMap['PASS'] = storeSecret; //Change to storeSecret later
-    loginMap['type'] = 'login';
-
-    FormData loginData = new FormData.fromMap(loginMap);
-
-    try {
-      Response response =
-          await Dio().post(Home.serverUrl + "process.php", data: loginData);
-      var jsonData = json.decode(response.toString());
-
-      String loginStatus = jsonData["status"];
-      String status;
-
-      if (loginStatus == 'store') {
-        var map = new Map<String, dynamic>();
-        map['id'] = storeId; //change to storeId later
-        map['type'] = 'products';
-
-        FormData formData = new FormData.fromMap(map);
-
-        try {
-          Response response =
-              await Dio().post(Home.serverUrl + "process.php", data: formData);
-
-          var jsonData = json.decode(response.toString());
-
-          List<Product> products = [];
-
-          for (var i in jsonData) {
-            Product product =
-                Product(i["id"], i["name"], double.parse(i["price"]));
-
-            products.add(product);
-
-            quantities.add(0);
-            quantitiesString.add("0");
-            productsNameList.add(i["name"]);
-            productsList.add(i["id"]);
-          }
-
-          return products;
-        } catch (e) {
-          print(e);
-        }
-      } else {
-        status = loginStatus;
-      }
-    } catch (e) {
-      print(e);
-    }
+  void _getProducts() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.getProducts();
   }
 
-  Future<List<Product>> _refresh() async {
-    //Refresh product list
-    //Refresh list of users from server
+  Future<void> _refreshProducts() {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.refreshProducts();
     setState(() {
       totalAmount = 0;
-      for (var i = 0; i < quantities.length; i++) {
-        quantitiesString[i] = '0';
-        quantities[i] = 0;
-        _amountController.text = '0';
-      }
-      _future = _getProducts();
+      _amountText = '0';
     });
   }
 
@@ -230,10 +173,6 @@ class _PaymentState extends State<Payment> {
 
     storeId = prefs.getString('id');
     storeSecret = prefs.getString('secret');
-
-    setState(() {
-      _future = _getProducts();
-    });
   }
 
   @override
@@ -241,6 +180,7 @@ class _PaymentState extends State<Payment> {
     super.initState();
     _getStoredData();
     _getBalance();
+    _getProducts();
     connectivityText = _checkConnectivity();
   }
 
@@ -258,6 +198,7 @@ class _PaymentState extends State<Payment> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 1080, height: 2248);
+    final appState = Provider.of<AppState>(context);
 
     return Scaffold(
       body: Stack(
@@ -295,6 +236,7 @@ class _PaymentState extends State<Payment> {
             ),
           ),
           Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Container(
                   height: ScreenUtil().setHeight(460),
@@ -307,120 +249,121 @@ class _PaymentState extends State<Payment> {
                   )),
               Expanded(
                 child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        Text('How much?',
-                              style: TextStyle(
-                                  fontSize: 40.0, fontWeight: FontWeight.w700)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Text('Total',
+                                style: TextStyle(
+                                    fontSize: 30.0,
+                                    fontWeight: FontWeight.w500)),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Text('RM ',
+                                    style: TextStyle(
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.w500)),
+                                Text(
+                                    FlutterMoneyFormatter(
+                                            amount: double.parse(_amountText))
+                                        .output
+                                        .nonSymbol,
+                                    style: TextStyle(
+                                        fontSize: 40.0,
+                                        fontWeight: FontWeight.w700)),
+                              ],
+                            )
+                          ],
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 10.0)
-                        ),
-                        TextField(
-                          enabled: false,
-                          decoration: InputDecoration(
-                              contentPadding: EdgeInsets.all(12),
-                              prefixIcon: Padding(
-                                  padding: EdgeInsets.all(15),
-                                  child: Text('RM'))),
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.w600),
-                          controller: _amountController,
-                          keyboardType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                        ),
-                        FutureBuilder<List<Product>>(
-                            future: _future,
-                            builder: (context, snapshot) {
-                              switch (snapshot.connectionState) {
-                                case ConnectionState.none:
-                                case ConnectionState
-                                    .waiting: //Display progress circle while loading
-                                  return Expanded(
+                        appState.isFetchingProducts
+                            ? Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 50.0),
+                                child: Center(
+                                    child: SpinKitDoubleBounce(
+                                color: Theme.of(context).primaryColor,
+                                size: 50.0,
+                              )))
+                            : appState.getProductsJson() != null
+                                ? Expanded(
                                     child: Container(
-                                      child: Center(
-                                          child: SpinKitDoubleBounce(
-                                        color: Theme.of(context).primaryColor,
-                                        size: 50.0,
-                                      )),
-                                    ),
-                                  );
-                                default: //Display card when loaded
-                                  if (snapshot.data != null) {
-                                  return Expanded(
-                                      child: Container(
-                                          child: RefreshIndicator(
-                                              key: _refreshIndicatorKey,
-                                              onRefresh: _refresh,
-                                              child: ListView.builder(
-                                                  itemCount:
-                                                      snapshot.data.length,
-                                                  itemBuilder:
-                                                      (BuildContext context,
-                                                              int index) =>
-                                                          Container(
-                                                              child: Container(
-                                                            padding: EdgeInsets
-                                                                .fromLTRB(
-                                                                    0,
-                                                                    1.25,
-                                                                    0,
-                                                                    1.25),
-                                                            child: SizedBox(
-                                                                height: 123,
-                                                                width: double
-                                                                    .infinity,
-                                                                child: Card(
-                                                                  shape:
-                                                                      RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
+                                        child: RefreshIndicator(
+                                            key: _refreshIndicatorKey,
+                                            onRefresh: _refreshProducts,
+                                            child: ListView.builder(
+                                                padding: EdgeInsets.symmetric(vertical: 10.0),
+                                                shrinkWrap: true,
+                                                itemCount: appState
+                                                    .getProductsJson()
+                                                    .length,
+                                                itemBuilder:
+                                                    (BuildContext context,
+                                                            int index) =>
+                                                        SizedBox(
+                                                            height: 113,
+                                                            width:
+                                                                double.infinity,
+                                                            child: Card(
+                                                              shape:
+                                                                  RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
                                                                             18),
-                                                                  ),
-                                                                  child:
-                                                                      InkWell(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
+                                                              ),
+                                                              child: InkWell(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
                                                                             18),
-                                                                    child:
-                                                                        Padding(
-                                                                      padding: const EdgeInsets
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
                                                                               .all(
-                                                                          15.0),
-                                                                      child:
-                                                                          Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceBetween,
-                                                                        crossAxisAlignment:
-                                                                            CrossAxisAlignment.center,
-                                                                        children: <
-                                                                            Widget>[
-                                                                          Expanded(
-                                                                            child:
-                                                                                (Column(
-                                                                              children: <Widget>[
-                                                                                ListTile(
-                                                                                    title: Text(
-                                                                                      snapshot.data[index].name,
-                                                                                      style: Theme.of(context).textTheme.title,
-                                                                                    ),
-                                                                                    subtitle: Container(
-                                                                                      padding: EdgeInsets.only(top: 10.0),
-                                                                                      child: Text(
-                                                                                        'RM ' + FlutterMoneyFormatter(amount: snapshot.data[index].price).output.nonSymbol,
-                                                                                        style: Theme.of(context).textTheme.subhead,
-                                                                                      ),
-                                                                                    )),
-                                                                              ],
-                                                                            )),
-                                                                          ),
-                                                                          Expanded(
-                                                                            child:
-                                                                                (Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.center, children: [
+                                                                          10.0),
+                                                                  child: Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .spaceBetween,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .center,
+                                                                    children: <
+                                                                        Widget>[
+                                                                      Expanded(
+                                                                        child:
+                                                                            (Column(
+                                                                          children: <
+                                                                              Widget>[
+                                                                            ListTile(
+                                                                                title: Text(
+                                                                                  appState.getProductsJson()[index].name,
+                                                                                  style: Theme.of(context).textTheme.title,
+                                                                                ),
+                                                                                subtitle: Container(
+                                                                                  padding: EdgeInsets.only(top: 10.0),
+                                                                                  child: Text(
+                                                                                    'RM ' + FlutterMoneyFormatter(amount: appState.getProductsJson()[index].price).output.nonSymbol,
+                                                                                    style: Theme.of(context).textTheme.subhead,
+                                                                                  ),
+                                                                                )),
+                                                                          ],
+                                                                        )),
+                                                                      ),
+                                                                      Expanded(
+                                                                        child: (Row(
+                                                                            mainAxisAlignment:
+                                                                                MainAxisAlignment.spaceEvenly,
+                                                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                                                            children: [
                                                                               SizedBox(
                                                                                 width: 30.0,
                                                                                 child: (FlatButton(
@@ -428,12 +371,13 @@ class _PaymentState extends State<Payment> {
                                                                                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                                                                                   onPressed: () {
                                                                                     setState(() {
-                                                                                      if (quantities[index] - 1 >= 0) {
-                                                                                        quantities[index] -= 1;
-                                                                                        totalAmount = totalAmount - snapshot.data[index].price.toInt();
-                                                                                        quantitiesString[index] = quantities[index].toString();
-                                                                                        _amountController.text = totalAmount.toString();
+                                                                                      if (appState.getProductQuantities()[index] - 1 >= 0) {
+                                                                                        appState.getProductQuantities()[index] -= 1;
+                                                                                        totalAmount = totalAmount - appState.getProductsJson()[index].price.toInt();
+                                                                                        appState.getProductQuantitiesString()[index] = appState.getProductQuantities()[index].toString();
+                                                                                        _amountText = totalAmount.toString();
                                                                                       } else {
+                                                                                        Scaffold.of(context).removeCurrentSnackBar();
                                                                                         Scaffold.of(context).showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
                                                                                       }
                                                                                     });
@@ -441,7 +385,7 @@ class _PaymentState extends State<Payment> {
                                                                                 )),
                                                                               ),
                                                                               Text(
-                                                                                quantitiesString[index],
+                                                                                appState.getProductQuantitiesString()[index],
                                                                                 style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.w400),
                                                                               ),
                                                                               SizedBox(
@@ -450,44 +394,30 @@ class _PaymentState extends State<Payment> {
                                                                                     child: const Text('+', style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w300)),
                                                                                     padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                                                                                     onPressed: () {
+                                                                                      appState.getProductQuantities()[index] += 1;
+                                                                                      appState.getProductQuantitiesString()[index] = appState.getProductQuantities()[index].toString();
                                                                                       setState(() {
-                                                                                        quantities[index] += 1;
-                                                                                        totalAmount = totalAmount + snapshot.data[index].price.toInt();
-                                                                                        quantitiesString[index] = quantities[index].toString();
-                                                                                        _amountController.text = totalAmount.toString();
+                                                                                        totalAmount = totalAmount + appState.getProductsJson()[index].price.toInt();
+
+                                                                                        _amountText = totalAmount.toString();
                                                                                       });
                                                                                     },
                                                                                   ))),
                                                                             ])),
-                                                                          ),
-                                                                        ],
                                                                       ),
-                                                                    ),
+                                                                    ],
                                                                   ),
-                                                                )),
-                                                          ))))));
-                                  }
-                                  else {
-                                    return Expanded(
-                                      child: Center(
-                                          child: FutureBuilder<String>(
-                                            future: connectivityText,
-                                            builder: (context, snapshot) {
-                                              switch(snapshot.hasData) {
-                                                case true:
-                                                  return Text(snapshot.data, textAlign: TextAlign.center);
-                                                case false:
-                                                default:
-                                                  return Text('Waiting for connection from server', textAlign: TextAlign.center);
-                                              }
-                                            }
-                                          )
-                                      )
-                                    );
-                                  }
-                              }
-                            }),
-                           SizedBox(
+                                                                ),
+                                                              ),
+                                                            ))))))
+                                : Center(
+                                    child: Container(
+                                    margin:
+                                        EdgeInsets.symmetric(vertical: 50.0),
+                                    child: Text(
+                                        "No response from server. Please try again later."),
+                                  )),
+                        SizedBox(
                             width: double.infinity,
                             height: ScreenUtil().setHeight(130),
                             child: RaisedButton.icon(
@@ -497,10 +427,11 @@ class _PaymentState extends State<Payment> {
                               ),
                               label: Text("Scan QR Code",
                                   style: TextStyle(
-                                      color: Colors.white, fontSize: ScreenUtil().setSp(54, allowFontScalingSelf: true))),
+                                      color: Colors.white,
+                                      fontSize: ScreenUtil().setSp(54,
+                                          allowFontScalingSelf: true))),
                               onPressed: () {
-                                _scan(_amountController.text, quantities, productsList,
-                                    productsNameList, context);
+                                _scan(_amountText, appState.getProductQuantities(), context);
                               },
                             )),
                       ],
@@ -510,7 +441,6 @@ class _PaymentState extends State<Payment> {
           ),
         ],
       ),
-
     );
   }
 
@@ -521,6 +451,7 @@ class _PaymentState extends State<Payment> {
     } catch (e) {
       if (e is PlatformException) {
         if (e.code == BarcodeScanner.CameraAccessDenied) {
+          Scaffold.of(context).removeCurrentSnackBar();
           Scaffold.of(context).showSnackBar(SnackBar(
             content: Text("Camera permission not obtained!"),
           ));
@@ -530,12 +461,21 @@ class _PaymentState extends State<Payment> {
     return null;
   }
 
-  void _scan(
-      String _amount, quantities, products, names, BuildContext context) async {
+  void _scan(String _amount, quantities, BuildContext context) async {
+    final appState = Provider.of<AppState>(context, listen: false);
+
     //Show dialog after scan complete
     final idList = [];
     final quantitiesList = [];
     final nameList = [];
+
+    var products = [];
+    var names = [];
+
+    for (var i in appState.getProductsJson()) {
+      products.add(i.productId);
+      names.add(i.name);
+    }
 
     if (_amount.isNotEmpty && int.parse(_amount) > 0) {
       for (var i = 0; i < quantities.length; i++) {
@@ -881,6 +821,7 @@ class _PaymentState extends State<Payment> {
                                         ]);
                                       });
                                 } else {
+                                  Scaffold.of(context).removeCurrentSnackBar();
                                   Scaffold.of(context).showSnackBar(SnackBar(
                                     content: Text(
                                         "Please wait for the previous transaction to finish first"),
@@ -897,11 +838,13 @@ class _PaymentState extends State<Payment> {
               ]);
             });
       } else {
+        Scaffold.of(context).removeCurrentSnackBar();
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text("Please try again"),
         ));
       }
     } else {
+      Scaffold.of(context).removeCurrentSnackBar();
       Scaffold.of(context).showSnackBar(SnackBar(
         content: Text("Amount must be larger than 0!"),
       ));

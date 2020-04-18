@@ -84,11 +84,11 @@ class _TransactionsState extends State<Transactions> {
                 : appState.getUserResponseJson() != null
                     ? Expanded(
                         child: Container(
-                            margin: EdgeInsets.symmetric(vertical: 10.0),
                             child: RefreshIndicator(
                                 key: _refreshIndicatorKey,
                                 onRefresh: _refreshHistory,
                                 child: ListView.builder(
+                                    padding: EdgeInsets.symmetric(vertical: 10.0),
                                     itemCount: appState.getUserHistoryJson().length,
                                     itemBuilder: (BuildContext context,
                                             int index) =>

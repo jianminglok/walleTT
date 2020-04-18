@@ -52,8 +52,6 @@ class _OrderInfoState extends State<OrderInfo> {
         map['id'] = 'S001';
         map['type'] = 'products';
 
-        print('This is ' + storeId);
-
         FormData formData = new FormData.fromMap(map);
 
         try {

@@ -18,7 +18,13 @@ class AppState with ChangeNotifier {
   List<Product> products = [];
   bool _isFetchingStore = false;
 
+  var quantities = [];
+  var quantitiesString = [];
+
+  bool _isFetchingProducts = false;
+
   bool get isFetchingStore => _isFetchingStore;
+  bool get isFetchingProducts => _isFetchingProducts;
 
   var storeId;
   var storeSecret;
@@ -68,6 +74,147 @@ class AppState with ChangeNotifier {
     _refreshShopHistory();
   }
 
+  Future<List<Product>> getProducts() async {
+    //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    storeId = prefs.getString('id');
+    storeSecret = prefs.getString('secret');
+
+    _getProducts();
+  }
+
+  Future<List<Product>> refreshProducts() async {
+    //Get store id etc
+    WidgetsFlutterBinding.ensureInitialized();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    storeId = prefs.getString('id');
+    storeSecret = prefs.getString('secret');
+
+    _refreshProducts();
+  }
+
+  Future<List<Product>> _getProducts() async {
+    //Get list of products
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
+
+    FormData loginData = new FormData.fromMap(loginMap);
+
+    try {
+      Response response =
+      await Dio().post(Home.serverUrl + "process.php", data: loginData);
+      var jsonData = json.decode(response.toString());
+
+      String loginStatus = jsonData["status"];
+      String status;
+
+      if (loginStatus == 'store') {
+
+        _isFetchingProducts = true;
+
+        var map = new Map<String, dynamic>();
+        map['id'] = storeId; //change to storeId later
+        map['type'] = 'products';
+
+        FormData formData = new FormData.fromMap(map);
+
+        try {
+          Response response =
+          await Dio().post(Home.serverUrl + "process.php", data: formData);
+
+          var jsonData = json.decode(response.toString());
+
+          products = [];
+
+          for (var i in jsonData) {
+            Product product =
+            Product(i["id"], i["name"], double.parse(i["price"]));
+
+            quantities.add(0);
+            quantitiesString.add('0');
+
+            products.add(product);
+          }
+
+          _isFetchingProducts = false;
+          notifyListeners();
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<List<Product>> _refreshProducts() async {
+    //Get list of products
+    var loginMap = new Map<String, dynamic>();
+    loginMap['STORE'] = storeId; //Change to storeId later
+    loginMap['PASS'] = storeSecret; //Change to storeSecret later
+    loginMap['type'] = 'login';
+
+    FormData loginData = new FormData.fromMap(loginMap);
+
+    try {
+      Response response =
+      await Dio().post(Home.serverUrl + "process.php", data: loginData);
+      var jsonData = json.decode(response.toString());
+
+      String loginStatus = jsonData["status"];
+      String status;
+
+      if (loginStatus == 'store') {
+
+        _isFetchingProducts = true;
+        notifyListeners();
+
+        var map = new Map<String, dynamic>();
+        map['id'] = storeId; //change to storeId later
+        map['type'] = 'products';
+
+        FormData formData = new FormData.fromMap(map);
+
+        try {
+          Response response =
+          await Dio().post(Home.serverUrl + "process.php", data: formData);
+
+          var jsonData = json.decode(response.toString());
+
+          products = [];
+          quantities = [];
+          quantitiesString = [];
+
+          for (var i in jsonData) {
+            Product product =
+            Product(i["id"], i["name"], double.parse(i["price"]));
+
+            quantities.add(0);
+            quantitiesString.add('0');
+
+            products.add(product);
+          }
+
+          _isFetchingProducts = false;
+          notifyListeners();
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        status = loginStatus;
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   Future<List<Order>> _getShopHistory() async { //Do verification before getting list of transactions
 
     var loginMap = new Map<String, dynamic>();
@@ -87,6 +234,7 @@ class AppState with ChangeNotifier {
       if(loginStatus == 'store') { //If verification is successful
 
         _isFetchingStore = true;
+        notifyListeners();
 
         var map = new Map<String, dynamic>();
         map['id'] = storeId; //change to storeId later
@@ -236,9 +384,39 @@ class AppState with ChangeNotifier {
     }
   }
 
+  void resetProductQuantities() {
+    quantities = [];
+    quantitiesString = [];
+    for (var i in products) {
+      quantities.add(0);
+      quantitiesString.add('0');
+    }
+  }
+
   List<dynamic> getUserResponseJson() {
     if(_jsonResponseStore != null) {
       return _strings;
+    }
+    return null;
+  }
+
+  List<dynamic> getProductsJson() {
+    if(products != null) {
+      return products;
+    }
+    return null;
+  }
+
+  List<dynamic> getProductQuantities() {
+    if(products != null) {
+      return quantities;
+    }
+    return null;
+  }
+
+  List<dynamic> getProductQuantitiesString() {
+    if(products != null) {
+      return quantitiesString;
     }
     return null;
   }
