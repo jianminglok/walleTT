@@ -102,7 +102,8 @@ class _PaymentState extends State<Payment> {
                       totalAmount = 0;
                       _amountText = '0';
 
-                      final appState = Provider.of<AppState>(context, listen: false);
+                      final appState =
+                          Provider.of<AppState>(context, listen: false);
                       appState.resetProductQuantities();
 
                       _refreshBalance();
@@ -261,7 +262,7 @@ class _PaymentState extends State<Payment> {
                           children: <Widget>[
                             Text('Total',
                                 style: TextStyle(
-                                    fontSize: 30.0,
+                                    fontSize: 27.5,
                                     fontWeight: FontWeight.w500)),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -285,13 +286,12 @@ class _PaymentState extends State<Payment> {
                         ),
                         appState.isFetchingProducts
                             ? Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 50.0),
+                                padding: EdgeInsets.symmetric(vertical: 50.0),
                                 child: Center(
                                     child: SpinKitDoubleBounce(
-                                color: Theme.of(context).primaryColor,
-                                size: 50.0,
-                              )))
+                                  color: Theme.of(context).primaryColor,
+                                  size: 50.0,
+                                )))
                             : appState.getProductsJson() != null
                                 ? Expanded(
                                     child: Container(
@@ -299,7 +299,8 @@ class _PaymentState extends State<Payment> {
                                             key: _refreshIndicatorKey,
                                             onRefresh: _refreshProducts,
                                             child: ListView.builder(
-                                                padding: EdgeInsets.symmetric(vertical: 10.0),
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 10.0),
                                                 shrinkWrap: true,
                                                 itemCount: appState
                                                     .getProductsJson()
@@ -307,8 +308,7 @@ class _PaymentState extends State<Payment> {
                                                 itemBuilder:
                                                     (BuildContext context,
                                                             int index) =>
-                                                        SizedBox(
-                                                            height: 113,
+                                                        Container(
                                                             width:
                                                                 double.infinity,
                                                             child: Card(
@@ -325,10 +325,12 @@ class _PaymentState extends State<Payment> {
                                                                         .circular(
                                                                             18),
                                                                 child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                              .all(
-                                                                          10.0),
+                                                                  padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                      vertical:
+                                                                          10.0,
+                                                                      horizontal:
+                                                                          5.0),
                                                                   child: Row(
                                                                     mainAxisAlignment:
                                                                         MainAxisAlignment
@@ -339,8 +341,11 @@ class _PaymentState extends State<Payment> {
                                                                     children: <
                                                                         Widget>[
                                                                       Expanded(
+                                                                        flex: 4,
                                                                         child:
-                                                                            (Column(
+                                                                            Column(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
                                                                           children: <
                                                                               Widget>[
                                                                             ListTile(
@@ -356,19 +361,21 @@ class _PaymentState extends State<Payment> {
                                                                                   ),
                                                                                 )),
                                                                           ],
-                                                                        )),
+                                                                        ),
                                                                       ),
                                                                       Expanded(
-                                                                        child: (Row(
+                                                                          flex: 3,
+                                                                          child: Row(
                                                                             mainAxisAlignment:
-                                                                                MainAxisAlignment.spaceEvenly,
-                                                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                                                            children: [
-                                                                              SizedBox(
-                                                                                width: 30.0,
-                                                                                child: (FlatButton(
-                                                                                  child: const Text('-', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w200)),
-                                                                                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                                                            MainAxisAlignment.spaceEvenly,
+                                                                            children: <Widget>[
+                                                                              Container(
+                                                                                width: 50.0,
+                                                                                height: 80.0,
+                                                                                child: FlatButton(
+                                                                                  child: const Center(
+                                                                                    child: Text('-', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w200))
+                                                                                  ),
                                                                                   onPressed: () {
                                                                                     setState(() {
                                                                                       if (appState.getProductQuantities()[index] - 1 >= 0) {
@@ -382,15 +389,19 @@ class _PaymentState extends State<Payment> {
                                                                                       }
                                                                                     });
                                                                                   },
-                                                                                )),
+                                                                                  onLongPress: () {
+                                                                                    HapticFeedback.vibrate();
+                                                                                  },
+                                                                                ),
                                                                               ),
                                                                               Text(
                                                                                 appState.getProductQuantitiesString()[index],
                                                                                 style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.w400),
                                                                               ),
-                                                                              SizedBox(
-                                                                                  width: 30.0,
-                                                                                  child: (FlatButton(
+                                                                              Container(
+                                                                                  width: 50.0,
+                                                                                  height: 80.0,
+                                                                                  child: FlatButton(
                                                                                     child: const Text('+', style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w300)),
                                                                                     padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                                                                                     onPressed: () {
@@ -402,9 +413,10 @@ class _PaymentState extends State<Payment> {
                                                                                         _amountText = totalAmount.toString();
                                                                                       });
                                                                                     },
-                                                                                  ))),
-                                                                            ])),
-                                                                      ),
+                                                                                  )),
+                                                                            ],
+                                                                          )
+                                                                      )
                                                                     ],
                                                                   ),
                                                                 ),
@@ -431,7 +443,8 @@ class _PaymentState extends State<Payment> {
                                       fontSize: ScreenUtil().setSp(54,
                                           allowFontScalingSelf: true))),
                               onPressed: () {
-                                _scan(_amountText, appState.getProductQuantities(), context);
+                                _scan(_amountText,
+                                    appState.getProductQuantities(), context);
                               },
                             )),
                       ],
