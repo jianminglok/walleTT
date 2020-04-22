@@ -50,6 +50,8 @@ class _PaymentState extends State<Payment> {
   var productsList = [];
   var productsNameList = [];
 
+  var quantities = [];
+
   var storeId;
   var storeName;
   var storeStatus;
@@ -194,6 +196,39 @@ class _PaymentState extends State<Payment> {
     } on SocketException catch (_) {
       return 'Please make sure you have an active internet connection.';
     }
+  }
+
+  int _counter = 0;
+  bool _buttonPressed = false;
+  bool _loopActive = false;
+
+  void _decreaseQuantity(index) async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    // make sure that only one loop is active
+    if (_loopActive) return;
+
+    _loopActive = true;
+
+    while (_buttonPressed) {
+      // do your thing
+      setState(() {
+        if (appState.getProductQuantities()[index] - 1 >= 0) {
+          appState.getProductQuantities()[index] -= 1;
+          totalAmount =
+              totalAmount - appState.getProductsJson()[index].price.toInt();
+          appState.getProductQuantitiesString()[index] =
+              appState.getProductQuantities()[index].toString();
+          _amountText = totalAmount.toString();
+        } else {
+          Scaffold.of(context).removeCurrentSnackBar();
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
+        }
+      });
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+
+    _loopActive = false;
   }
 
   @override
@@ -364,34 +399,36 @@ class _PaymentState extends State<Payment> {
                                                                         ),
                                                                       ),
                                                                       Expanded(
-                                                                          flex: 3,
-                                                                          child: Row(
+                                                                          flex:
+                                                                              3,
+                                                                          child:
+                                                                              Row(
                                                                             mainAxisAlignment:
-                                                                            MainAxisAlignment.spaceEvenly,
+                                                                                MainAxisAlignment.spaceEvenly,
                                                                             children: <Widget>[
                                                                               Container(
                                                                                 width: 50.0,
                                                                                 height: 80.0,
                                                                                 child: FlatButton(
-                                                                                  child: const Center(
-                                                                                    child: Text('-', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w200))
+                                                                                  padding: EdgeInsets.zero,
+                                                                                  onPressed: () {},
+                                                                                  child: GestureDetector(
+                                                                                    onTapDown: (_) {
+                                                                                      _buttonPressed = true;
+                                                                                      _decreaseQuantity(index);
+                                                                                    },
+                                                                                    onTapUp: (_) {
+                                                                                    _buttonPressed = false;
+                                                                                    },
+                                                                                    child: Container(
+
+                                                                                        height: 80.0,
+                                                                                        width: 50.0,
+                                                                                      child: Center(
+                                                                                        child: Text('-', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w200))
+                                                                                      )
+                                                                                    ),
                                                                                   ),
-                                                                                  onPressed: () {
-                                                                                    setState(() {
-                                                                                      if (appState.getProductQuantities()[index] - 1 >= 0) {
-                                                                                        appState.getProductQuantities()[index] -= 1;
-                                                                                        totalAmount = totalAmount - appState.getProductsJson()[index].price.toInt();
-                                                                                        appState.getProductQuantitiesString()[index] = appState.getProductQuantities()[index].toString();
-                                                                                        _amountText = totalAmount.toString();
-                                                                                      } else {
-                                                                                        Scaffold.of(context).removeCurrentSnackBar();
-                                                                                        Scaffold.of(context).showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
-                                                                                      }
-                                                                                    });
-                                                                                  },
-                                                                                  onLongPress: () {
-                                                                                    HapticFeedback.vibrate();
-                                                                                  },
                                                                                 ),
                                                                               ),
                                                                               Text(
@@ -415,8 +452,7 @@ class _PaymentState extends State<Payment> {
                                                                                     },
                                                                                   )),
                                                                             ],
-                                                                          )
-                                                                      )
+                                                                          ))
                                                                     ],
                                                                   ),
                                                                 ),
