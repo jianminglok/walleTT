@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:barcode_scan/barcode_scan.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +18,6 @@ import 'AppState.dart';
 import 'Home.dart';
 import 'Login.dart';
 
-import 'Product.dart';
-
 class Payment extends StatefulWidget {
   Payment({Key key}) : super(key: key);
 
@@ -32,8 +29,6 @@ class _PaymentState extends State<Payment> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
 
-  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
-
   var totalAmount = 0;
 
   @override
@@ -42,9 +37,6 @@ class _PaymentState extends State<Payment> {
   bool makingPayment = false;
   bool success = false;
 
-  Future<List<Product>> _future;
-  Future<List<String>> _sharedStrings;
-  Future<String> _paymentResult;
   Future<String> _verifyResult;
 
   var productsList = [];
@@ -59,8 +51,6 @@ class _PaymentState extends State<Payment> {
   var storeBalance;
 
   Future<String> connectivityText;
-
-  TextEditingController _amountController = TextEditingController();
 
   String _amountText = '0';
 
@@ -198,7 +188,6 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  int _counter = 0;
   bool _buttonPressed = false;
   bool _loopActive = false;
 
@@ -407,30 +396,28 @@ class _PaymentState extends State<Payment> {
                                                                                 MainAxisAlignment.spaceEvenly,
                                                                             children: <Widget>[
                                                                               Container(
-                                                                                width: 50.0,
-                                                                                height: 80.0,
-                                                                                child: FlatButton(
-                                                                                  padding: EdgeInsets.zero,
-                                                                                  onPressed: () {},
-                                                                                  child: GestureDetector(
-                                                                                    onTapDown: (_) {
-                                                                                      _buttonPressed = true;
-                                                                                      _decreaseQuantity(index);
+                                                                                  width: 50.0,
+                                                                                  height: 80.0,
+                                                                                  child: FlatButton(
+                                                                                    child: const Text('-', style: TextStyle(fontSize: 30.0, fontWeight: FontWeight.w300)),
+                                                                                    padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                                                                    onPressed: () {
+                                                                                      if (appState.getProductQuantities()[index] - 1 >= 0) {
+                                                                                        appState.getProductQuantities()[index] -= 1;
+                                                                                        appState.getProductQuantitiesString()[index] =
+                                                                                            appState.getProductQuantities()[index].toString();
+                                                                                        setState(() {
+                                                                                          totalAmount =
+                                                                                              totalAmount - appState.getProductsJson()[index].price.toInt();
+                                                                                          _amountText = totalAmount.toString();
+                                                                                        });
+                                                                                      } else {
+                                                                                        Scaffold.of(context).removeCurrentSnackBar();
+                                                                                        Scaffold.of(context)
+                                                                                            .showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
+                                                                                      }
                                                                                     },
-                                                                                    onTapUp: (_) {
-                                                                                    _buttonPressed = false;
-                                                                                    },
-                                                                                    child: Container(
-
-                                                                                        height: 80.0,
-                                                                                        width: 50.0,
-                                                                                      child: Center(
-                                                                                        child: Text('-', style: TextStyle(fontSize: 50.0, fontWeight: FontWeight.w200))
-                                                                                      )
-                                                                                    ),
-                                                                                  ),
-                                                                                ),
-                                                                              ),
+                                                                                  )),
                                                                               Text(
                                                                                 appState.getProductQuantitiesString()[index],
                                                                                 style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.w400),
@@ -446,7 +433,6 @@ class _PaymentState extends State<Payment> {
                                                                                       appState.getProductQuantitiesString()[index] = appState.getProductQuantities()[index].toString();
                                                                                       setState(() {
                                                                                         totalAmount = totalAmount + appState.getProductsJson()[index].price.toInt();
-
                                                                                         _amountText = totalAmount.toString();
                                                                                       });
                                                                                     },
@@ -595,7 +581,7 @@ class _PaymentState extends State<Payment> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
                               Text(
-                                "ID",
+                                "User ID",
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
@@ -639,7 +625,10 @@ class _PaymentState extends State<Payment> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Expanded(
-                                child: ListView.builder(
+                                child: ListView.separated(
+                                    separatorBuilder: (context, index) => Divider(
+                                      color: Colors.black54,
+                                    ),
                                     shrinkWrap: true,
                                     itemCount: nameList.length,
                                     itemBuilder:
@@ -648,18 +637,25 @@ class _PaymentState extends State<Payment> {
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: <Widget>[
-                                          Text(
-                                            nameList[index],
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .title,
+                                          Expanded(
+                                            flex: 5,
+                                            child: Text(
+                                              nameList[index],
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .title,
+                                            ),
                                           ),
-                                          Text(
-                                            quantitiesList[index].toString(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .title,
-                                          ),
+                                          Expanded(
+                                            flex: 1,
+                                            child: Text(
+                                              quantitiesList[index].toString(),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .title,
+                                              textAlign: TextAlign.end,
+                                            ),
+                                          )
                                         ],
                                       );
                                     }))
@@ -783,7 +779,11 @@ class _PaymentState extends State<Payment> {
                                                                             Widget>[
                                                                           Center(
                                                                             child:
-                                                                                CircularProgressIndicator(),
+                                                                              Center(
+                                                                                  child: SpinKitDoubleBounce(
+                                                                                    color: Theme.of(context).primaryColor,
+                                                                                    size: 50.0,
+                                                                                  ))
                                                                           )
                                                                         ]);
                                                                   default: //Display card when loaded
