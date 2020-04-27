@@ -70,7 +70,7 @@ class _PaymentState extends State<Payment> {
       String loginStatus = jsonData["status"];
       String status;
 
-      if (loginStatus == 'ok') {
+      if (loginStatus == 'agent') {
         //If verification successful
         try {
           Response response = await Dio()
@@ -495,7 +495,7 @@ class _PaymentState extends State<Payment> {
                                     agentId; //Change to storeId later
                                 loginMap['PASS'] =
                                     agentSecret; //Change to storeSecret later
-                                loginMap['type'] = 'topup';
+                                loginMap['type'] = 'login';
 
                                 FormData loginData =
                                     new FormData.fromMap(loginMap);

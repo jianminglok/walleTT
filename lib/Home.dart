@@ -13,7 +13,7 @@ import 'Topup.dart';
 class Home extends StatelessWidget {
   // This widget is the root of your application.
 
-  static String serverUrl = 'https://sttss.000webhostapp.com/';
+  static String serverUrl = 'https://wallett.gq/';
 
   @override
   Widget build(BuildContext context) {

@@ -81,7 +81,7 @@ class AppState with ChangeNotifier {
       String loginStatus = jsonData["status"];
       String status;
 
-      if(loginStatus == 'ok') { //If verification is successful
+      if(loginStatus == 'agent') { //If verification is successful
 
         _isFetchingUser = true;
 
@@ -125,7 +125,7 @@ class AppState with ChangeNotifier {
     var loginMap = new Map<String, dynamic>();
     loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
-    loginMap['type'] = 'topuphistory';
+    loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
@@ -136,7 +136,7 @@ class AppState with ChangeNotifier {
       String loginStatus = jsonData["status"];
       String status;
 
-      if(loginStatus == 'ok') { //If verification is successful
+      if(loginStatus == 'agent') { //If verification is successful
 
         _isFetchingUser = true;
         notifyListeners();

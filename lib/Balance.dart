@@ -39,7 +39,7 @@ class _BalanceState extends State<Balance> {
     var loginMap = new Map<String, dynamic>();
     loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
-    loginMap['type'] = 'checkbalance';
+    loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
@@ -51,7 +51,7 @@ class _BalanceState extends State<Balance> {
       String loginStatus = jsonData["status"];
       String status;
 
-      if (loginStatus == 'ok') {
+      if (loginStatus == 'agent') {
         //If verification is successful get list of products
         var map = new Map<String, dynamic>();
         map['id'] = 'U' + userId;
@@ -66,8 +66,6 @@ class _BalanceState extends State<Balance> {
           var jsonData = json.decode(response.toString());
 
           List<String> strings = [];
-
-          print(jsonData['status']);
 
           if (jsonData['status'] == 'User does not exist!') {
             strings.add(jsonData['status']);

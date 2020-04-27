@@ -112,7 +112,7 @@ class _LoginState extends State<LoginPage> {
             case "Server error":
               errorMessage = "Server error";
               break;
-            case "ID or password incorrect":
+            case "ID/password incorrect":
               errorMessage = "Username or password is incorrect";
               break;
             case "User does not exist":

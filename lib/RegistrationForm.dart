@@ -64,7 +64,7 @@ class _CreateFormState extends State<CreateForm> {
     var loginMap = new Map<String, dynamic>();
     loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
-    loginMap['type'] = 'reg';
+    loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
@@ -90,7 +90,7 @@ class _CreateFormState extends State<CreateForm> {
 
       print(loginStatus);
 
-      if (loginStatus == 'ok') {
+      if (loginStatus == 'agent') {
         //If verification successful
         try {
           Response response =
