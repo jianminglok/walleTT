@@ -220,7 +220,7 @@ class _PaymentState extends State<Payment> {
 
   Future<bool> _checkConnectivity() async {
     try {
-      final result = await InternetAddress.lookup('sttss.000webhostapp.com');
+      final result = await InternetAddress.lookup('wallett.gq');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         return true;
       }
