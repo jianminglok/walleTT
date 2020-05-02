@@ -79,8 +79,6 @@ class _BalanceState extends State<Balance> {
             strings.add(userId);
           }
 
-          print(strings);
-
           return strings;
         } catch (e) {
           print(e);
@@ -119,7 +117,6 @@ class _BalanceState extends State<Balance> {
       return await BarcodeScanner.scan();
     } catch (e) {
       if (e is PlatformException) {
-        print("Camera permission not obtained!");
       }
     }
     return null;

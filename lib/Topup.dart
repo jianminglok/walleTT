@@ -288,7 +288,6 @@ class _PaymentState extends State<Payment> {
                 setState(() {
                   _darkTheme = !_darkTheme;
                 });
-                print(_darkTheme);
                 onThemeChanged(_darkTheme, themeNotifier);
               } else if (value == 2) {
                 _showLogoutDialog();
@@ -387,7 +386,6 @@ class _PaymentState extends State<Payment> {
 
   void _scan(String _amount, BuildContext context) async {
     //Show dialog after scan complete
-    print(_amount);
     if (_amount.isNotEmpty && int.parse(_amount) > 0) {
       String id = await scan(context);
       String displayAmount =

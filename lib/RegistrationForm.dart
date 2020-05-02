@@ -92,8 +92,6 @@ class _CreateFormState extends State<CreateForm> {
       String loginStatus = jsonData["status"];
       String status;
 
-      print(loginStatus);
-
       if (loginStatus == 'agent') {
         //If verification successful
         try {
@@ -167,7 +165,6 @@ class _CreateFormState extends State<CreateForm> {
       return await BarcodeScanner.scan();
     } catch (e) {
       if (e is PlatformException) {
-        print("Camera permission not obtained!");
       }
     }
     return null;

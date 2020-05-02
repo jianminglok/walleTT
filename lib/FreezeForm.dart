@@ -83,8 +83,6 @@ class _FreezeFormState extends State<FreezeForm> {
       String loginStatus = jsonData["status"];
       String status;
 
-      print(loginStatus);
-
       if (loginStatus == 'agent') {
         //If verification successful
         try {
@@ -102,8 +100,6 @@ class _FreezeFormState extends State<FreezeForm> {
               _textControllers[1].text = '';
             });
           }
-
-          print(freezeStatus);
 
           status = freezeStatus;
         } catch (e) {
