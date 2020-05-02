@@ -263,19 +263,20 @@ class _PaymentState extends State<Payment> {
             ),
           ),
           Positioned(
-            top: 35,
-            left: 7.5,
+            top: 30.75,
+            left: 5,
             child: PopupMenuButton(
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 1,
-                  child: _darkTheme ? Text("Disable Dark Mode") : Text("Enable Dark Mode"),
+                  child: _darkTheme ? Text("Disable Dark Theme") : Text("Enable Dark Theme"),
                 ),
                 PopupMenuItem(
                   value: 2,
                   child: Text("Logout"),
                 ),
               ],
+              offset: Offset(0, 7.5),
               onSelected: (value) {
                 if(value == 1) {
                   setState(() {
@@ -563,7 +564,7 @@ class _PaymentState extends State<Payment> {
               return Wrap(children: <Widget>[
                 Container(
                   decoration: BoxDecoration(
-                    color: _darkTheme ? Colors.black : Colors.white,
+                    color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(18),
                       topRight: Radius.circular(18),
@@ -776,7 +777,7 @@ class _PaymentState extends State<Payment> {
                                         return Wrap(children: <Widget>[
                                           Container(
                                               decoration: BoxDecoration(
-                                                color: _darkTheme ? Colors.black : Colors.white,
+                                                color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(18),
                                                   topRight: Radius.circular(18),

@@ -433,7 +433,7 @@ class _OrderInfoState extends State<OrderInfo> {
               return Wrap(children: <Widget>[
                 Container(
                   decoration: BoxDecoration(
-                    color: _darkTheme ? Colors.black : Colors.white,
+                    color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(18),
                       topRight: Radius.circular(18),
@@ -615,7 +615,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                         return Wrap(children: <Widget>[
                                           Container(
                                               decoration: BoxDecoration(
-                                                color: _darkTheme ? Colors.black : Colors.white,
+                                                color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(18),
                                                   topRight: Radius.circular(18),
