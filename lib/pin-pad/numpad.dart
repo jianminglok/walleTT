@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:vector_math/vector_math_64.dart' as vector_math;
 import 'package:flutter/services.dart';
 
+import '../main.dart';
 import './pin_input_field.dart';
 import './numpad_keyboard.dart';
 import './numpad_controller.dart';
@@ -24,6 +25,9 @@ class NumPad extends StatefulWidget {
 }
 
 class _NumPadState extends State<NumPad> with SingleTickerProviderStateMixin {
+
+  var _darkTheme = false;
+
   AnimationController animationController;
   Animation<double> animation;
   TextEditingController inputController;
@@ -43,7 +47,6 @@ class _NumPadState extends State<NumPad> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    print("initializing numpad");
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     inputController = widget.controller;
@@ -54,6 +57,8 @@ class _NumPadState extends State<NumPad> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 1080, height: 2248);
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
     return Scaffold(
         body: Container(
 

@@ -14,6 +14,7 @@ import 'package:walleTT/Transactions.dart';
 
 import 'AppState.dart';
 import 'Home.dart';
+import 'main.dart';
 
 class Balance extends StatefulWidget {
   Balance({Key key}) : super(key: key);
@@ -32,6 +33,8 @@ class _BalanceState extends State<Balance> {
 
   var agentId;
   var agentSecret;
+
+  var _darkTheme = false;
 
   Future<List<String>> _verify(String userId) async {
     //Do verification before getting order info
@@ -132,6 +135,10 @@ class _BalanceState extends State<Balance> {
 
   @override
   Widget build(BuildContext context) {
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
@@ -263,7 +270,7 @@ class _BalanceState extends State<Balance> {
                                                         .subhead
                                                         .copyWith(
                                                         color:
-                                                        Colors.black54),
+                                                        _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -296,7 +303,7 @@ class _BalanceState extends State<Balance> {
                                                         .subhead
                                                         .copyWith(
                                                             color:
-                                                                Colors.black54),
+                                                            _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -329,7 +336,7 @@ class _BalanceState extends State<Balance> {
                                                         .subhead
                                                         .copyWith(
                                                             color:
-                                                                Colors.black54),
+                                                            _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -363,7 +370,7 @@ class _BalanceState extends State<Balance> {
                                                         .subhead
                                                         .copyWith(
                                                             color:
-                                                                Colors.black54),
+                                                            _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),

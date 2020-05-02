@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Home.dart';
 import 'Topup.dart';
+import 'main.dart';
 
 // TODO: refactor this monstrosity of a class
 
@@ -36,6 +37,8 @@ class _FreezeFormState extends State<FreezeForm> {
 
   Future _future;
   Future<String> _verifyResult;
+
+  var _darkTheme = false;
 
   @override
   void initState() {
@@ -199,7 +202,7 @@ class _FreezeFormState extends State<FreezeForm> {
                                 return Wrap(children: <Widget>[
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                       borderRadius: BorderRadius.only(
                                         topLeft: Radius.circular(18),
                                         topRight: Radius.circular(18),
@@ -226,7 +229,7 @@ class _FreezeFormState extends State<FreezeForm> {
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .subhead
-                                                      .copyWith(color: Colors.black54),
+                                                      .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                                 ),
                                               ],
                                             ),
@@ -250,7 +253,7 @@ class _FreezeFormState extends State<FreezeForm> {
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .subhead
-                                                      .copyWith(color: Colors.black54),
+                                                      .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                                 ),
                                               ],
                                             ),
@@ -295,7 +298,7 @@ class _FreezeFormState extends State<FreezeForm> {
                                                           return Wrap(children: <Widget>[
                                                             Container(
                                                                 decoration: BoxDecoration(
-                                                                  color: Colors.white,
+                                                                  color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                                                   borderRadius: BorderRadius.only(
                                                                     topLeft: Radius.circular(18),
                                                                     topRight: Radius.circular(18),
@@ -559,6 +562,10 @@ class _FreezeFormState extends State<FreezeForm> {
 
   @override
   Widget build(BuildContext context) {
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     return FutureBuilder(
         future: _future,
         builder: (context, snapshot) {

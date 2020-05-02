@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/screenutil.dart';
+import 'package:provider/provider.dart';
+
+import '../main.dart';
 class NumPadKeyboard extends StatelessWidget {
   var clearKeyBackgroundColor, backKeyBackgroundColor, keyColor, keyFontColor;
   var backKeyFontColor, clearKeyFontColor;
   final int pinInputLength;
   final TextEditingController pinInputController;
+
+  var _darkTheme = false;
 
   NumPadKeyboard({
     this.pinInputLength = 5,
@@ -19,6 +24,10 @@ class NumPadKeyboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     return Column(
       children: <Widget>[
         Padding(
@@ -215,7 +224,7 @@ class NumPadKey extends StatelessWidget {
         height: (ScreenUtil().setHeight(420))/2.5,
         width: (ScreenUtil().setWidth(420))/1.75,
         child: Material(
-            color: Colors.grey[50],
+            color: Colors.transparent,
             child: InkWell(
               child: NumPadKeyContent(content: digit),
               /* Append new digit to current text string. */

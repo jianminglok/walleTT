@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'AppState.dart';
 import 'Home.dart';
 import 'Topup.dart';
+import 'main.dart';
 
 // TODO: refactor this monstrosity of a class
 
@@ -21,6 +22,9 @@ class CreateForm extends StatefulWidget {
 }
 
 class _CreateFormState extends State<CreateForm> {
+
+  var _darkTheme = false;
+
   final _formKey = GlobalKey<FormState>();
   final _pageViewController = PageController();
   final _textControllers = [
@@ -184,7 +188,7 @@ class _CreateFormState extends State<CreateForm> {
         children: <Widget>[
           Text(
             title,
-            style: Theme.of(context).textTheme.display1,
+            style: Theme.of(context).textTheme.display1.copyWith(color: _darkTheme ? Colors.white : Colors.black),
           ),
           Padding(
             padding: EdgeInsets.only(top: 16.0),
@@ -256,7 +260,7 @@ class _CreateFormState extends State<CreateForm> {
                                   return Wrap(children: <Widget>[
                                     Container(
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                         borderRadius: BorderRadius.only(
                                           topLeft: Radius.circular(18),
                                           topRight: Radius.circular(18),
@@ -283,7 +287,7 @@ class _CreateFormState extends State<CreateForm> {
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .subhead
-                                                        .copyWith(color: Colors.black54),
+                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -307,7 +311,7 @@ class _CreateFormState extends State<CreateForm> {
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .subhead
-                                                        .copyWith(color: Colors.black54),
+                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -331,7 +335,7 @@ class _CreateFormState extends State<CreateForm> {
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .subhead
-                                                        .copyWith(color: Colors.black54),
+                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -355,7 +359,7 @@ class _CreateFormState extends State<CreateForm> {
                                                     style: Theme.of(context)
                                                         .textTheme
                                                         .subhead
-                                                        .copyWith(color: Colors.black54),
+                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                                   ),
                                                 ],
                                               ),
@@ -398,7 +402,7 @@ class _CreateFormState extends State<CreateForm> {
                                                             return Wrap(children: <Widget>[
                                                               Container(
                                                                   decoration: BoxDecoration(
-                                                                    color: Colors.white,
+                                                                    color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                                                     borderRadius: BorderRadius.only(
                                                                       topLeft: Radius.circular(18),
                                                                       topRight: Radius.circular(18),
@@ -697,6 +701,10 @@ class _CreateFormState extends State<CreateForm> {
 
   @override
   Widget build(BuildContext context) {
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     return FutureBuilder(
         future: _future,
         builder: (context, snapshot) {

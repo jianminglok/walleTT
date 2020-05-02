@@ -3,15 +3,22 @@ import 'package:flutter_screenutil/screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:vector_math/vector_math_64.dart' as vector_math;
 
+import '../main.dart';
+
 class PinInputField extends StatelessWidget {
   var color, placeholderColor;
   final String placeholder;
 
   PinInputField({this.color, this.placeholder, this.placeholderColor});
 
+  var _darkTheme = false;
+
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 1080, height: 2248);
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
 
     return Column(
       children: <Widget>[
@@ -21,7 +28,7 @@ class PinInputField extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
                 label: Text('5'),
-                backgroundColor: Colors.white,
+                backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -37,7 +44,7 @@ class PinInputField extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
                 label: Text('10'),
-                backgroundColor: Colors.white,
+                backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -53,7 +60,7 @@ class PinInputField extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
                 label: Text('20'),
-                backgroundColor: Colors.white,
+                backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -69,7 +76,7 @@ class PinInputField extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
                 label: Text('50'),
-                backgroundColor: Colors.white,
+                backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -85,7 +92,7 @@ class PinInputField extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
                 label: Text('100'),
-                backgroundColor: Colors.white,
+                backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(

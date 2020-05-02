@@ -26,6 +26,7 @@ import 'Login.dart';
 import 'Product.dart';
 import 'SizeConfig.dart';
 import 'Transactions.dart';
+import 'main.dart';
 
 class Payment extends StatefulWidget {
   Payment({Key key}) : super(key: key);
@@ -57,6 +58,8 @@ class _PaymentState extends State<Payment> {
   var agentName;
   var agentSecret;
   var agentBalance;
+
+  var _darkTheme = false;
 
   TextEditingController _amountController = TextEditingController();
 
@@ -189,6 +192,11 @@ class _PaymentState extends State<Payment> {
     appState.refreshUserData();
   }
 
+  Future<void> _getHistory() async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    appState.getUserHistory();
+  }
+
   Future<void> _refreshHistory() async {
     final appState = Provider.of<AppState>(context, listen: false);
     appState.refreshUserHistory();
@@ -208,6 +216,7 @@ class _PaymentState extends State<Payment> {
     super.initState();
     _getStoredData();
     _getBalance();
+    _getHistory();
     _checkConnectivity().then((intenet) {
       if (intenet != null && intenet) {
         // Internet Present Case
@@ -233,6 +242,9 @@ class _PaymentState extends State<Payment> {
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 1080, height: 2248);
 
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     return Scaffold(
         body: Stack(
       children: <Widget>[
@@ -257,15 +269,32 @@ class _PaymentState extends State<Payment> {
           ),
         ),
         Positioned(
-          top: 30,
+          top: 30.75,
           left: 5,
-          child: IconButton(
-            color: Colors.white,
-            icon: Icon(Icons.exit_to_app),
-            onPressed: () async {
-              //Logout
-              _showLogoutDialog(context);
+          child: PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 1,
+                child: _darkTheme ? Text("Disable Dark Theme") : Text("Enable Dark Theme"),
+              ),
+              PopupMenuItem(
+                value: 2,
+                child: Text("Logout"),
+              ),
+            ],
+            offset: Offset(0, 7.5),
+            onSelected: (value) {
+              if(value == 1) {
+                setState(() {
+                  _darkTheme = !_darkTheme;
+                });
+                print(_darkTheme);
+                onThemeChanged(_darkTheme, themeNotifier);
+              } else if (value == 2) {
+                _showLogoutDialog();
+              }
             },
+            icon: Icon(Icons.more_vert, color: Colors.white),
           ),
         ),
         Positioned(
@@ -273,7 +302,7 @@ class _PaymentState extends State<Payment> {
           right: 5,
           child: IconButton(
             color: Colors.white,
-            icon: Icon(Icons.error_outline),
+            icon: Icon(Icons.warning, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 //Open QR Scanner
@@ -372,7 +401,7 @@ class _PaymentState extends State<Payment> {
               return Wrap(children: <Widget>[
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(18),
                       topRight: Radius.circular(18),
@@ -399,7 +428,7 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -424,7 +453,7 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -448,7 +477,7 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -521,7 +550,7 @@ class _PaymentState extends State<Payment> {
                                         return Wrap(children: <Widget>[
                                           Container(
                                               decoration: BoxDecoration(
-                                                color: Colors.white,
+                                                color: _darkTheme ? Colors.grey.shade800 : Colors.white,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(18),
                                                   topRight: Radius.circular(18),
@@ -671,7 +700,15 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void onThemeChanged(bool value, ThemeNotifier themeNotifier) async {
+    (value)
+        ? themeNotifier.setTheme(darkTheme)
+        : themeNotifier.setTheme(lightTheme);
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setBool('darkMode', value);
+  }
+
+  void _showLogoutDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -689,7 +726,19 @@ class _PaymentState extends State<Payment> {
               ),
               CupertinoDialogAction(
                 child: Text("Logout"),
-                onPressed: () {},
+                onPressed: () async {
+                  SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
+                  prefs.remove('id');
+                  prefs.remove('name');
+                  prefs.remove('status');
+                  prefs.remove('secret');
+                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (BuildContext ctx) => Login()),(Route<dynamic> route) => false);
+                },
               ),
             ],
           );
@@ -718,10 +767,11 @@ class _PaymentState extends State<Payment> {
                   prefs.remove('name');
                   prefs.remove('status');
                   prefs.remove('secret');
-                  Navigator.pushReplacement(
+                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext ctx) => Login()));
+                          builder: (BuildContext ctx) => Login()),(Route<dynamic> route) => false);
                 },
               ),
             ],

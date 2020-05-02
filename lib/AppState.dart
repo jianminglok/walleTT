@@ -70,7 +70,7 @@ class AppState with ChangeNotifier {
     var loginMap = new Map<String, dynamic>();
     loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
-    loginMap['type'] = 'topuphistory';
+    loginMap['type'] = 'login';
 
     FormData loginData = new FormData.fromMap(loginMap);
 
@@ -97,6 +97,8 @@ class AppState with ChangeNotifier {
           var jsonData = json.decode(response.toString());
 
           users = [];
+
+          print(jsonData);
 
           for (var i in jsonData) {
             Transaction user = Transaction(
@@ -153,6 +155,8 @@ class AppState with ChangeNotifier {
           var jsonData = json.decode(response.toString());
 
           users = [];
+
+          print(jsonData);
 
           for (var i in jsonData) {
             Transaction user = Transaction(

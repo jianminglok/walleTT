@@ -8,10 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/Transactions.dart';
 
 import 'Home.dart';
+import 'main.dart';
 
 class OrderInfo extends StatefulWidget {
   OrderInfo({Key key}) : super(key: key);
@@ -30,6 +32,8 @@ class _OrderInfoState extends State<OrderInfo> {
   var storeName;
   var storeStatus;
   var storeSecret;
+
+  var _darkTheme = false;
 
   Future<bool> _verify() async { //Do verification before getting order info
 
@@ -51,8 +55,6 @@ class _OrderInfoState extends State<OrderInfo> {
         var map = new Map<String, dynamic>();
         map['id'] = 'S001';
         map['type'] = 'products';
-
-        print('This is ' + storeId);
 
         FormData formData = new FormData.fromMap(map);
 
@@ -105,6 +107,9 @@ class _OrderInfoState extends State<OrderInfo> {
 
     String displayAmount =
         FlutterMoneyFormatter(amount: args.amount).output.nonSymbol;
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
 
     return Scaffold(
         appBar: AppBar(
@@ -160,7 +165,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .subhead
-                                                  .copyWith(color: Colors.black54),
+                                                  .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                             ),
                                           ],
                                         ),
@@ -187,7 +192,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .subhead
-                                                  .copyWith(color: Colors.black54),
+                                                  .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                             ),
                                           ],
                                         ),
@@ -213,7 +218,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .subhead
-                                                  .copyWith(color: Colors.black54),
+                                                  .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                             ),
                                           ],
                                         ),
@@ -239,7 +244,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .subhead
-                                                  .copyWith(color: Colors.black54),
+                                                  .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                             ),
                                           ],
                                         ),
@@ -265,7 +270,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .subhead
-                                                  .copyWith(color: Colors.black54),
+                                                  .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                             ),
                                           ],
                                         ),
