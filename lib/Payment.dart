@@ -282,7 +282,6 @@ class _PaymentState extends State<Payment> {
                   setState(() {
                     _darkTheme = !_darkTheme;
                   });
-                  print(_darkTheme);
                   onThemeChanged(_darkTheme, themeNotifier);
                 } else if (value == 2) {
                   _showLogoutDialog();
