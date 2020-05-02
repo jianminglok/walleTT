@@ -11,6 +11,7 @@ import 'package:walleTT/Transactions.dart';
 
 import 'AppState.dart';
 import 'Home.dart';
+import 'main.dart';
 
 class OrderInfo extends StatefulWidget {
   OrderInfo({Key key}) : super(key: key);
@@ -35,6 +36,8 @@ class _OrderInfoState extends State<OrderInfo> {
 
   Future<String> _reverseResult;
   bool reversing = false;
+
+  var _darkTheme = false;
 
   Future<bool> _verify() async {
     //Do verification before getting order info
@@ -172,6 +175,9 @@ class _OrderInfoState extends State<OrderInfo> {
   Widget build(BuildContext context) {
     final OrderInfoArguments args = ModalRoute.of(context).settings.arguments;
 
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     transStatus = args.status;
     if (args.status == 'Reversed') {
       setState(() {
@@ -233,7 +239,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .subhead
-                                            .copyWith(color: Colors.black54),
+                                            .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                       ),
                                     ],
                                   ),
@@ -260,7 +266,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .subhead
-                                            .copyWith(color: Colors.black54),
+                                            .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                       ),
                                     ],
                                   ),
@@ -286,14 +292,14 @@ class _OrderInfoState extends State<OrderInfo> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .subhead
-                                            .copyWith(color: Colors.black54),
+                                            .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                       ),
                                       Text(
                                         "Quantity",
                                         style: Theme.of(context)
                                             .textTheme
                                             .subhead
-                                            .copyWith(color: Colors.black54),
+                                            .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                       ),
                                     ],
                                   ),
@@ -305,7 +311,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                     Expanded(
                                         child: ListView.separated(
                                             separatorBuilder: (context, index) => Divider(
-                                              color: Colors.black54,
+                                              color: _darkTheme ? Colors.white54 : Colors.black54,
                                             ),
                                             shrinkWrap: true,
                                             itemCount: args.products.length,
@@ -355,7 +361,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                         style: Theme.of(context)
                                             .textTheme
                                             .subhead
-                                            .copyWith(color: Colors.black54),
+                                            .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                                       ),
                                     ],
                                   ),
@@ -427,7 +433,7 @@ class _OrderInfoState extends State<OrderInfo> {
               return Wrap(children: <Widget>[
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _darkTheme ? Colors.black : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(18),
                       topRight: Radius.circular(18),
@@ -454,7 +460,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -478,7 +484,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -502,14 +508,14 @@ class _OrderInfoState extends State<OrderInfo> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                               Text(
                                 "Quantity",
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -520,7 +526,7 @@ class _OrderInfoState extends State<OrderInfo> {
                             Expanded(
                                 child: ListView.separated(
                                     separatorBuilder: (context, index) => Divider(
-                                      color: Colors.black54,
+                                      color: _darkTheme ? Colors.white54 : Colors.black54,
                                     ),
                                     shrinkWrap: true,
                                     itemCount: products.length,
@@ -565,7 +571,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -609,7 +615,7 @@ class _OrderInfoState extends State<OrderInfo> {
                                         return Wrap(children: <Widget>[
                                           Container(
                                               decoration: BoxDecoration(
-                                                color: Colors.white,
+                                                color: _darkTheme ? Colors.black : Colors.white,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(18),
                                                   topRight: Radius.circular(18),

@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:walleTT/main.dart';
 
 import 'AppState.dart';
 import 'Order.dart';
@@ -31,6 +32,8 @@ class _TransactionsState extends State<Transactions> {
   var storeName;
   var storeStatus;
   var storeSecret;
+
+  var _darkTheme = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -63,6 +66,9 @@ class _TransactionsState extends State<Transactions> {
   @override
   Widget build(BuildContext context) {
     final appState = Provider.of<AppState>(context);
+
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
 
     return Scaffold(
         appBar: AppBar(
@@ -238,14 +244,17 @@ class _TransactionsState extends State<Transactions> {
                                                                                   index]
                                                                               .status ==
                                                                           'Approved'
-                                                                      ? Color(0xff03da9d)
-                                                                          .withAlpha(
+                                                                      ? _darkTheme
+                                                                          ? Color(0xff03da9d).withAlpha(
+                                                                              75)
+                                                                          : Color(0xff03da9d).withAlpha(
                                                                               30)
-                                                                      : Theme.of(
-                                                                              context)
-                                                                          .primaryColor
-                                                                          .withAlpha(
-                                                                              30),
+                                                                      : _darkTheme
+                                                                          ? Theme.of(context).primaryColor.withAlpha(
+                                                                              75)
+                                                                          : Theme.of(context)
+                                                                              .primaryColor
+                                                                              .withAlpha(30),
                                                                   shape:
                                                                       RoundedRectangleBorder(
                                                                     borderRadius:

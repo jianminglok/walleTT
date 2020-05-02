@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'AppState.dart';
 import 'Home.dart';
 import 'Login.dart';
+import 'main.dart';
 
 class Payment extends StatefulWidget {
   Payment({Key key}) : super(key: key);
@@ -54,6 +55,8 @@ class _PaymentState extends State<Payment> {
   Future<String> connectivityText;
 
   String _amountText = '0';
+
+  var _darkTheme = false;
 
   Future<String> _verify(formData, paymentData, balanceData, _amount) async {
     //Do verification when submitting payment
@@ -233,6 +236,9 @@ class _PaymentState extends State<Payment> {
     ScreenUtil.init(context, width: 1080, height: 2248);
     final appState = Provider.of<AppState>(context);
 
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+    _darkTheme = (themeNotifier.getTheme() == darkTheme);
+
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -257,15 +263,31 @@ class _PaymentState extends State<Payment> {
             ),
           ),
           Positioned(
-            top: 30,
-            left: 5,
-            child: IconButton(
-              color: Colors.white,
-              icon: Icon(Icons.exit_to_app),
-              onPressed: () async {
-                //Logout
-                _showLogoutDialog(context);
+            top: 35,
+            left: 7.5,
+            child: PopupMenuButton(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 1,
+                  child: _darkTheme ? Text("Disable Dark Mode") : Text("Enable Dark Mode"),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: Text("Logout"),
+                ),
+              ],
+              onSelected: (value) {
+                if(value == 1) {
+                  setState(() {
+                    _darkTheme = !_darkTheme;
+                  });
+                  print(_darkTheme);
+                  onThemeChanged(_darkTheme, themeNotifier);
+                } else if (value == 2) {
+                  _showLogoutDialog();
+                }
               },
+              icon: Icon(Icons.more_vert, color: Colors.white),
             ),
           ),
           Column(
@@ -541,7 +563,7 @@ class _PaymentState extends State<Payment> {
               return Wrap(children: <Widget>[
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _darkTheme ? Colors.black : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(18),
                       topRight: Radius.circular(18),
@@ -568,7 +590,7 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -593,7 +615,7 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -617,14 +639,14 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                               Text(
                                 "Quantity",
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -635,7 +657,7 @@ class _PaymentState extends State<Payment> {
                             Expanded(
                                 child: ListView.separated(
                                     separatorBuilder: (context, index) => Divider(
-                                      color: Colors.black54,
+                                      color: _darkTheme ? Colors.white54 : Colors.black54,
                                     ),
                                     shrinkWrap: true,
                                     itemCount: nameList.length,
@@ -679,7 +701,7 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: Colors.black54),
+                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
                               ),
                             ],
                           ),
@@ -754,7 +776,7 @@ class _PaymentState extends State<Payment> {
                                         return Wrap(children: <Widget>[
                                           Container(
                                               decoration: BoxDecoration(
-                                                color: Colors.white,
+                                                color: _darkTheme ? Colors.black : Colors.white,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(18),
                                                   topRight: Radius.circular(18),
@@ -908,7 +930,15 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void onThemeChanged(bool value, ThemeNotifier themeNotifier) async {
+    (value)
+        ? themeNotifier.setTheme(darkTheme)
+        : themeNotifier.setTheme(lightTheme);
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setBool('darkMode', value);
+  }
+
+  void _showLogoutDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -933,10 +963,11 @@ class _PaymentState extends State<Payment> {
                   prefs.remove('name');
                   prefs.remove('status');
                   prefs.remove('secret');
-                  Navigator.pushReplacement(
+                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext ctx) => Login()));
+                          builder: (BuildContext ctx) => Login()),(Route<dynamic> route) => false);
                 },
               ),
             ],
@@ -966,10 +997,11 @@ class _PaymentState extends State<Payment> {
                   prefs.remove('name');
                   prefs.remove('status');
                   prefs.remove('secret');
-                  Navigator.pushReplacement(
+                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
-                          builder: (BuildContext ctx) => Login()));
+                          builder: (BuildContext ctx) => Login()),(Route<dynamic> route) => false);
                 },
               ),
             ],
