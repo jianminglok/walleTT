@@ -744,19 +744,19 @@ class _PaymentState extends State<Payment> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            title: Text("Confirm logout?"),
+            title: Text("Confirm logout?", style: TextStyle(fontFamily: 'Rubik'),),
             content: Text(
-                "You can only perform transactions after you have logged in"),
+                "You can only perform transactions after you have logged in", style: TextStyle(fontFamily: 'Rubik'),),
             actions: <Widget>[
               FlatButton(
-                child: Text("Cancel"),
+                child: Text("Cancel", style: TextStyle(fontFamily: 'Rubik'),),
                 textColor: Colors.black87,
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
               ),
               FlatButton(
-                child: Text("Logout"),
+                child: Text("Logout", style: TextStyle(fontFamily: 'Rubik'),),
                 textColor: Colors.red,
                 onPressed: () async {
                   SharedPreferences prefs =
@@ -800,12 +800,12 @@ class _PaymentState extends State<Payment> {
           return AlertDialog(
             shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            title: Text("Error"),
+            title: Text("Error", style: TextStyle(fontFamily: 'Rubik'),),
             content: Text(
-                "Please make sure you have an active internet connection"),
+                "Please make sure you have an active internet connection", style: TextStyle(fontFamily: 'Rubik'),),
             actions: <Widget>[
               FlatButton(
-                child: Text("OK"),
+                child: Text("OK", style: TextStyle(fontFamily: 'Rubik'),),
                 textColor: Colors.black87,
                 onPressed: () {
                   Navigator.of(context).pop();

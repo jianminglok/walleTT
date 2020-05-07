@@ -27,7 +27,7 @@ class PinInputField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
-                label: Text('5'),
+                label: Text('5', style: TextStyle(fontFamily: 'Rubik'),),
                 backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
@@ -43,7 +43,7 @@ class PinInputField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
-                label: Text('10'),
+                label: Text('10', style: TextStyle(fontFamily: 'Rubik'),),
                 backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
@@ -59,7 +59,7 @@ class PinInputField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
-                label: Text('20'),
+                label: Text('20', style: TextStyle(fontFamily: 'Rubik'),),
                 backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
@@ -75,7 +75,7 @@ class PinInputField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
-                label: Text('50'),
+                label: Text('50', style: TextStyle(fontFamily: 'Rubik'),),
                 backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
@@ -91,7 +91,7 @@ class PinInputField extends StatelessWidget {
             Container(
               padding: const EdgeInsets.only(right: 8.0),
               child: ActionChip(
-                label: Text('100'),
+                label: Text('100', style: TextStyle(fontFamily: 'Rubik'),),
                 backgroundColor: _darkTheme ? Colors.grey.shade800 : Colors.white,
                 elevation: 1,
                 shape: RoundedRectangleBorder(
