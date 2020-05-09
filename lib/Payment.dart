@@ -554,7 +554,7 @@ class _PaymentState extends State<Payment> {
       String id = await scan(context);
       String displayAmount =
           FlutterMoneyFormatter(amount: double.parse(_amount)).output.nonSymbol;
-      if (id != null) {
+      if (id != null && id.isNotEmpty && id.contains('U') && id.contains(';')) {
         showModalBottomSheet(
             isScrollControlled: true,
             context: context,
@@ -624,7 +624,7 @@ class _PaymentState extends State<Payment> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              id,
+                              id.split('U')[1].split(';')[0],
                               style: Theme.of(context).textTheme.title,
                             ),
                           ],
@@ -732,7 +732,7 @@ class _PaymentState extends State<Payment> {
                                       color: Colors.white, fontSize: 18.0)),
                               onPressed: () {
                                 var map = new Map<String, dynamic>();
-                                map['userId'] = 'U' + id;
+                                map['userId'] = id;
                                 map['storeId'] =
                                     storeId; //change to storeId later
                                 map['time'] = DateFormat('yyyy-MM-dd HH:mm:ss')
@@ -756,7 +756,7 @@ class _PaymentState extends State<Payment> {
                                     new FormData.fromMap(loginMap);
 
                                 var balanceMap = new Map<String, dynamic>();
-                                balanceMap['id'] = 'U' + id;
+                                balanceMap['id'] = id;
                                 balanceMap['type'] = 'checkbalance';
 
                                 FormData balanceData =
@@ -916,6 +916,11 @@ class _PaymentState extends State<Payment> {
                 )
               ]);
             });
+      } else if (id != null && id.isNotEmpty && !id.contains('U') && !id.contains(';')) {
+        Scaffold.of(context).removeCurrentSnackBar();
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text("Please scan a valid QR code"),
+        ));
       } else {
         Scaffold.of(context).removeCurrentSnackBar();
         Scaffold.of(context).showSnackBar(SnackBar(
