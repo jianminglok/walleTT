@@ -57,7 +57,7 @@ class _BalanceState extends State<Balance> {
       if (loginStatus == 'agent') {
         //If verification is successful get list of products
         var map = new Map<String, dynamic>();
-        map['id'] = 'U' + userId;
+        map['id'] = userId;
         map['type'] = 'checkbalance';
 
         FormData formData = new FormData.fromMap(map);
@@ -104,10 +104,18 @@ class _BalanceState extends State<Balance> {
 
   void _scan() async {
     String userId = await scan();
-    if(userId != null && userId.isNotEmpty) {
+    if(userId != null && userId.isNotEmpty && userId.contains('U') && userId.contains(';')) {
       setState(() {
         _future2 = _verify(userId);
       });
+    } else if (userId != null && userId.isNotEmpty && !userId.contains('U') && !userId.contains(';')) {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Please scan a valid QR code"),
+      ));
+    } else {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Please try again"),
+      ));
     }
   }
 
@@ -278,7 +286,7 @@ class _BalanceState extends State<Balance> {
                                                   .spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  snapshot.data[3],
+                                                  snapshot.data[3].split('U')[1].split(';')[0],
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .title,

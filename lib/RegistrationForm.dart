@@ -25,6 +25,8 @@ class _CreateFormState extends State<CreateForm> {
 
   var _darkTheme = false;
 
+  String scanResult;
+
   final _formKey = GlobalKey<FormState>();
   final _pageViewController = PageController();
   final _textControllers = [
@@ -73,7 +75,7 @@ class _CreateFormState extends State<CreateForm> {
     FormData loginData = new FormData.fromMap(loginMap);
 
     var map = new Map<String, dynamic>();
-    map['reg'] = _textControllers[0].text;
+    map['reg'] = scanResult;
     map['agentId'] = agentId; //change to storeId later
     map['money'] = int.parse(_textControllers[3].text);
     map['agent'] = agentSecret;
@@ -94,11 +96,15 @@ class _CreateFormState extends State<CreateForm> {
 
       if (loginStatus == 'agent') {
         //If verification successful
+
+        print(map.toString());
         try {
           Response response =
               await Dio().post(Home.serverUrl + "reg.php", data: regData);
 
           String regStatus = response.toString();
+
+          print(response);
 
           if (regStatus == 'ok') {
             setState(() {
@@ -156,7 +162,12 @@ class _CreateFormState extends State<CreateForm> {
   }
 
   void _scan() async {
-    _textControllers[0].text = await scan();
+    scanResult = await scan();
+    if(scanResult.isNotEmpty) {
+      _textControllers[0].text = scanResult.split('U')[1].split(';')[0];
+    } else {
+      _textControllers[0].text = 'Please try again';
+    }
   }
 
   static Future<String> scan() async {
@@ -293,7 +304,7 @@ class _CreateFormState extends State<CreateForm> {
                                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  _textControllers[0].text,
+                                                  scanResult.split('U')[1].split(';')[0],
                                                   style: Theme.of(context).textTheme.title,
                                                 ),
                                               ],
