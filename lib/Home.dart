@@ -21,14 +21,13 @@ class Home extends StatelessWidget {
       DeviceOrientation.portraitUp,
     ]);
     final themeNotifier = Provider.of<ThemeNotifier>(context);
-    return MaterialApp(
-      title: 'walleTT',
-        theme: themeNotifier.getTheme(),
-        home: ChangeNotifierProvider<AppState>(
-          create: (_) => AppState(),
-          child: HomePage(title: 'walleTT Home Page'),
-        )
-    );
+    return ChangeNotifierProvider(
+        create: (_) => AppState(),
+        child: MaterialApp(
+          title: 'walleTT',
+          theme: themeNotifier.getTheme(),
+          home: HomePage(title: 'walleTT Home Page'),
+        ));
   }
 }
 
@@ -68,26 +67,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _bottomNavigationBar(int selectedIndex) => BottomNavigationBar(
-    type: BottomNavigationBarType.fixed,//Switch between page
-    onTap: (int index) => setState(() => _selectedIndex = index),
-    currentIndex: selectedIndex,
-    items: const <BottomNavigationBarItem>[
-      BottomNavigationBarItem(
-          icon: Icon(Icons.add), title: Text('Topup')),
-      BottomNavigationBarItem(
-          icon: Icon(Icons.center_focus_strong), title: Text('Balance')),//Balance Page
-      BottomNavigationBarItem(
-          icon: Icon(Icons.fiber_new), title: Text('Registration')),
-      BottomNavigationBarItem(
-          icon: Icon(Icons.list), title: Text('Transactions')), //Transactions Record Page
-    ],
-  );
+        type: BottomNavigationBarType.fixed, //Switch between page
+        onTap: (int index) => setState(() => _selectedIndex = index),
+        currentIndex: selectedIndex,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.add), title: Text('Topup')),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.center_focus_strong),
+              title: Text('Balance')), //Balance Page
+          BottomNavigationBarItem(
+              icon: Icon(Icons.fiber_new), title: Text('Registration')),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.list),
+              title: Text('Transactions')), //Transactions Record Page
+        ],
+      );
 
   @override
-  Widget build(BuildContext context) { //Bottom Navigation Widget
+  Widget build(BuildContext context) {
+    //Bottom Navigation Widget
 
     return Scaffold(
-
       bottomNavigationBar: _bottomNavigationBar(_selectedIndex),
       body: IndexedStack(
         index: _selectedIndex,

@@ -96,15 +96,11 @@ class _CreateFormState extends State<CreateForm> {
 
       if (loginStatus == 'agent') {
         //If verification successful
-
-        print(map.toString());
         try {
           Response response =
               await Dio().post(Home.serverUrl + "reg.php", data: regData);
 
           String regStatus = response.toString();
-
-          print(response);
 
           if (regStatus == 'ok') {
             setState(() {

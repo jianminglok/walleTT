@@ -127,38 +127,44 @@ class _TransactionsState extends State<Transactions> {
                                                               MaterialPageRoute(
                                                                 builder:
                                                                     (context) =>
-                                                                        OrderInfo(),
+                                                                        TransactionInfo(),
                                                                 settings:
                                                                     RouteSettings(
-                                                                  arguments: OrderInfoArguments(
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .time,
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .userName,
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .userId,
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .topupId,
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .amount,
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .remark,
-                                                                      appState
-                                                                          .getUserHistoryJson()[
-                                                                              index]
-                                                                          .cleared),
+                                                                  arguments:
+                                                                      TransactionInfoArguments(
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .time,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .userName,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .userId,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .topupId,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .amount,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .remark,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .cleared,
+                                                                    appState
+                                                                        .getUserHistoryJson()[
+                                                                            index]
+                                                                        .reversed,
+                                                                  ),
                                                                 ),
                                                               ),
                                                             );
@@ -180,7 +186,6 @@ class _TransactionsState extends State<Transactions> {
                                                                   children: <
                                                                       Widget>[
                                                                     Text(
-                                                                      //appState.getUserHistoryJson()[index].userName + ' (' + appState.getUserHistoryJson()[index].userId + ')',
                                                                       appState
                                                                           .getUserHistoryJson()[
                                                                               index]
@@ -242,44 +247,76 @@ class _TransactionsState extends State<Transactions> {
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                Chip(
-                                                                  backgroundColor: appState
-                                                                              .getUserHistoryJson()[
-                                                                                  index]
-                                                                              .cleared ==
-                                                                          'cleared'
-                                                                      ? _darkTheme
-                                                                      ? Color(0xff03da9d).withAlpha(
-                                                                      75)
-                                                                      : Color(0xff03da9d).withAlpha(
-                                                                      30)
-                                                                      : _darkTheme
-                                                                      ? Theme.of(context).primaryColor.withAlpha(
-                                                                      75)
-                                                                      : Theme.of(context)
-                                                                      .primaryColor
-                                                                      .withAlpha(30),
-                                                                  shape:
-                                                                      RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius
-                                                                            .all(
-                                                                      Radius
-                                                                          .circular(
+                                                                Row(
+                                                                  children: <
+                                                                      Widget>[
+                                                                    Chip(
+                                                                      backgroundColor: appState.getUserHistoryJson()[index].cleared ==
+                                                                              'cleared'
+                                                                          ? _darkTheme
+                                                                              ? Color(0xff03da9d).withAlpha(
+                                                                                  75)
+                                                                              : Color(0xff03da9d).withAlpha(
+                                                                                  30)
+                                                                          : _darkTheme
+                                                                              ? Theme.of(context).primaryColor.withAlpha(75)
+                                                                              : Theme.of(context).primaryColor.withAlpha(30),
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.all(
+                                                                          Radius.circular(
                                                                               8),
+                                                                        ),
+                                                                      ),
+                                                                      label:
+                                                                          Text(
+                                                                        StringUtils.capitalize(appState
+                                                                            .getUserHistoryJson()[index]
+                                                                            .cleared),
+                                                                        style: TextStyle(
+                                                                            color: appState.getUserHistoryJson()[index].cleared == 'cleared'
+                                                                                ? Color(0xff03da9d)
+                                                                                : Theme.of(context).primaryColor),
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                  label: Text(
-                                                                    StringUtils.capitalize(appState
-                                                                        .getUserHistoryJson()[
-                                                                            index]
-                                                                        .cleared),
-                                                                    style: TextStyle(
-                                                                        color: appState.getUserHistoryJson()[index].cleared ==
-                                                                                'cleared'
-                                                                            ? Color(0xff03da9d)
-                                                                            : Theme.of(context).primaryColor),
-                                                                  ),
+                                                                    Padding(
+                                                                      padding: const EdgeInsets
+                                                                              .only(
+                                                                          left:
+                                                                              8.0),
+                                                                    ),
+                                                                    Chip(
+                                                                      backgroundColor: appState.getUserHistoryJson()[index].reversed ==
+                                                                              'Approved'
+                                                                          ? _darkTheme
+                                                                              ? Color(0xff03da9d).withAlpha(
+                                                                                  75)
+                                                                              : Color(0xff03da9d).withAlpha(
+                                                                                  30)
+                                                                          : _darkTheme
+                                                                              ? Theme.of(context).primaryColor.withAlpha(75)
+                                                                              : Theme.of(context).primaryColor.withAlpha(30),
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.all(
+                                                                          Radius.circular(
+                                                                              8),
+                                                                        ),
+                                                                      ),
+                                                                      label:
+                                                                          Text(
+                                                                        StringUtils.capitalize(appState
+                                                                            .getUserHistoryJson()[index]
+                                                                            .reversed),
+                                                                        style: TextStyle(
+                                                                            color: appState.getUserHistoryJson()[index].reversed == 'Approved'
+                                                                                ? Color(0xff03da9d)
+                                                                                : Theme.of(context).primaryColor),
+                                                                      ),
+                                                                    ),
+                                                                  ],
                                                                 ),
                                                                 Expanded(
                                                                   child: Column(
@@ -322,7 +359,7 @@ class _TransactionsState extends State<Transactions> {
   }
 }
 
-class OrderInfoArguments {
+class TransactionInfoArguments {
   final String time;
   final String userName;
   final String userId;
@@ -330,7 +367,8 @@ class OrderInfoArguments {
   final double amount;
   final String remark;
   final String cleared;
+  final String reversed;
 
-  OrderInfoArguments(this.time, this.userName, this.userId, this.topupId,
-      this.amount, this.remark, this.cleared);
+  TransactionInfoArguments(this.time, this.userName, this.userId, this.topupId,
+      this.amount, this.remark, this.cleared, this.reversed);
 }

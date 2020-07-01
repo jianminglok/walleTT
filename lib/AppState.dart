@@ -101,7 +101,7 @@ class AppState with ChangeNotifier {
           for (var i in jsonData) {
             Transaction user = Transaction(
                 int.parse(i["id"]), double.parse(i["amount"]), i["time"],
-                i["user"]["id"], i["user"]["name"], i["remark"], i["cleared"]);
+                i["user"]["id"], i["user"]["name"], i["remark"], i["reversed"], i["cleared"]);
 
             users.add(user);
           }
@@ -157,7 +157,7 @@ class AppState with ChangeNotifier {
           for (var i in jsonData) {
             Transaction user = Transaction(
                 int.parse(i["id"]), double.parse(i["amount"]), i["time"],
-                i["user"]["id"], i["user"]["name"], i["remark"], i["cleared"]);
+                i["user"]["id"], i["user"]["name"], i["remark"], i["reversed"], i["cleared"]);
 
             users.add(user);
           }
