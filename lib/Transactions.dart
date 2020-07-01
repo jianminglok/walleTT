@@ -185,19 +185,14 @@ class _TransactionsState extends State<Transactions> {
                                                                   children: <
                                                                       Widget>[
                                                                     Text(
-                                                                      appState.getUserHistoryJson()[index].userName +
-                                                                          ' (' +
-                                                                          appState
-                                                                              .getUserHistoryJson()[index]
-                                                                              .userId +
-                                                                          ')',
+                                                                      appState.getUserHistoryJson()[index].userName,
                                                                       style: Theme.of(
                                                                               context)
                                                                           .textTheme
                                                                           .subhead,
                                                                     ),
                                                                     Text(
-                                                                      'Order ID: ' +
+                                                                      'ID: ' +
                                                                           appState
                                                                               .getUserHistoryJson()[index]
                                                                               .orderId
