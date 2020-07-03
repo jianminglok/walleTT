@@ -70,7 +70,7 @@ class _BalanceState extends State<Balance> {
 
           List<String> strings = [];
 
-          if (jsonData['status'] == 'User does not exist!') {
+          if (jsonData['status'] == 'User does not exist' || jsonData['status'] == 'Failed to fetch data' || jsonData == 'User does not exist!') {
             strings.add(jsonData['status']);
           } else {
             strings.add(jsonData['name']);
@@ -97,6 +97,34 @@ class _BalanceState extends State<Balance> {
     _future = _getUserData();
   }
 
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  bool verifyQRValidity(String qr) {
+    var code = qr.splitByLength(1)[1].splitByLength(9)[0];
+    var sum = 0;
+    for (int i = 0; i < code.length; i++) {
+      if (isNumeric(code[code.length - 2]) &&
+          !isNumeric(code[code.length - 1])) {
+        if (i < code.length - 2) {
+          sum += int.parse(code[i]);
+        } else {
+          if ((sum % 10) == int.parse(code[code.length - 2])) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else {
+        return false;
+      }
+    }
+  }
+
   void _scan2() {
     final appState = Provider.of<AppState>(context, listen: false);
     appState.refreshUserData();
@@ -104,11 +132,13 @@ class _BalanceState extends State<Balance> {
 
   void _scan() async {
     String userId = await scan();
-    if(userId != null && userId.isNotEmpty && userId.contains('U') && userId.contains(';')) {
+    if(userId != null && userId.isNotEmpty && userId.contains('U') && userId.length == 69 && verifyQRValidity(userId)) {
       setState(() {
         _future2 = _verify(userId);
       });
-    } else if (userId != null && userId.isNotEmpty && !userId.contains('U') && !userId.contains(';')) {
+    } else if ((userId != null && userId.isNotEmpty && !userId.contains('U')) ||
+        (userId != null && userId.isNotEmpty && userId.length != 69) ||
+        (userId != null && userId.isNotEmpty && !verifyQRValidity(userId))) {
       Scaffold.of(context).showSnackBar(SnackBar(
         content: Text("Please scan a valid QR code"),
       ));
@@ -286,7 +316,7 @@ class _BalanceState extends State<Balance> {
                                                   .spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  snapshot.data[3].split('U')[1].split(';')[0],
+                                                  snapshot.data[3].splitByLength(1)[1].splitByLength(7)[0],
                                                   style: Theme.of(context)
                                                       .textTheme
                                                       .title,
@@ -450,4 +480,9 @@ class _BalanceState extends State<Balance> {
               })
         ]));
   }
+}
+
+extension on String {
+  List<String> splitByLength(int length) =>
+      [substring(0, length), substring(length)];
 }

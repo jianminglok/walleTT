@@ -22,7 +22,6 @@ class CreateForm extends StatefulWidget {
 }
 
 class _CreateFormState extends State<CreateForm> {
-
   var _darkTheme = false;
 
   String scanResult;
@@ -58,8 +57,6 @@ class _CreateFormState extends State<CreateForm> {
     agentId = prefs.getString('id');
     agentSecret = prefs.getString('secret');
   }
-
-
 
   var agentId;
   var agentSecret;
@@ -157,12 +154,61 @@ class _CreateFormState extends State<CreateForm> {
     FocusScope.of(context).unfocus();
   }
 
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  bool verifyQRValidity(String qr) {
+    var code = qr.splitByLength(1)[1].splitByLength(9)[0];
+    var sum = 0;
+    for (int i = 0; i < code.length; i++) {
+      if (isNumeric(code[code.length - 2]) &&
+          !isNumeric(code[code.length - 1])) {
+        if (i < code.length - 2) {
+          sum += int.parse(code[i]);
+        } else {
+          if ((sum % 10) == int.parse(code[code.length - 2])) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else {
+        return false;
+      }
+    }
+  }
+
   void _scan() async {
     scanResult = await scan();
-    if(scanResult.isNotEmpty) {
-      _textControllers[0].text = scanResult.split('U')[1].split(';')[0];
+    if (scanResult != null &&
+        scanResult.isNotEmpty &&
+        scanResult.contains('U') &&
+        scanResult.length == 69 &&
+        verifyQRValidity(scanResult)) {
+      _textControllers[0].text =
+          scanResult.splitByLength(1)[1].splitByLength(7)[0];
+    } else if ((scanResult != null &&
+            scanResult.isNotEmpty &&
+            !scanResult.contains('U')) ||
+        (scanResult != null &&
+            scanResult.isNotEmpty &&
+            scanResult.length != 69) ||
+        (scanResult != null &&
+            scanResult.isNotEmpty &&
+            !verifyQRValidity(scanResult))) {
+      Scaffold.of(context).removeCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Please scan a valid QR code"),
+      ));
     } else {
-      _textControllers[0].text = 'Please try again';
+      Scaffold.of(context).removeCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Please try again"),
+      ));
     }
   }
 
@@ -171,8 +217,7 @@ class _CreateFormState extends State<CreateForm> {
     try {
       return await BarcodeScanner.scan();
     } catch (e) {
-      if (e is PlatformException) {
-      }
+      if (e is PlatformException) {}
     }
     return null;
   }
@@ -192,7 +237,10 @@ class _CreateFormState extends State<CreateForm> {
         children: <Widget>[
           Text(
             title,
-            style: Theme.of(context).textTheme.display1.copyWith(color: _darkTheme ? Colors.white : Colors.black),
+            style: Theme.of(context)
+                .textTheme
+                .display1
+                .copyWith(color: _darkTheme ? Colors.white : Colors.black),
           ),
           Padding(
             padding: EdgeInsets.only(top: 16.0),
@@ -256,362 +304,334 @@ class _CreateFormState extends State<CreateForm> {
                         if (pageIndex == 3) {
                           FocusScope.of(context).unfocus();
 
-                            showModalBottomSheet(
-                                isScrollControlled: true,
-                                context: context,
-                                backgroundColor: Colors.transparent,
-                                builder: (context) {
-                                  return Wrap(children: <Widget>[
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: _darkTheme ? Colors.grey.shade800 : Colors.white,
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(18),
-                                          topRight: Radius.circular(18),
-                                        ),
+                          showModalBottomSheet(
+                              isScrollControlled: true,
+                              context: context,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) {
+                                return Wrap(children: <Widget>[
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: _darkTheme
+                                          ? Colors.grey.shade800
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(18),
+                                        topRight: Radius.circular(18),
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(26.0),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: <Widget>[
-                                            Text('Confirm Registration?',
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(26.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: <Widget>[
+                                          Text('Confirm Registration?',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline
+                                                  .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 24.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: <Widget>[
+                                                Text(
+                                                  "ID",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subhead
+                                                      .copyWith(
+                                                          color: _darkTheme
+                                                              ? Colors.white54
+                                                              : Colors.black54),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Text(
+                                                scanResult
+                                                    .splitByLength(1)[1]
+                                                    .splitByLength(7)[0],
                                                 style: Theme.of(context)
                                                     .textTheme
-                                                    .headline
-                                                    .copyWith(fontWeight: FontWeight.bold)),
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 24.0),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    "ID",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .subhead
-                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
-                                                  ),
-                                                ],
+                                                    .title,
                                               ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            ],
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 24.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  scanResult.split('U')[1].split(';')[0],
-                                                  style: Theme.of(context).textTheme.title,
+                                                  "Name",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subhead
+                                                      .copyWith(
+                                                          color: _darkTheme
+                                                              ? Colors.white54
+                                                              : Colors.black54),
                                                 ),
                                               ],
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 24.0),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    "Name",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .subhead
-                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
-                                                  ),
-                                                ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Text(
+                                                _textControllers[1].text,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .title,
                                               ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            ],
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 24.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  _textControllers[1].text,
-                                                  style: Theme.of(context).textTheme.title,
+                                                  "Phone Number",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subhead
+                                                      .copyWith(
+                                                          color: _darkTheme
+                                                              ? Colors.white54
+                                                              : Colors.black54),
                                                 ),
                                               ],
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 24.0),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    "Phone Number",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .subhead
-                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
-                                                  ),
-                                                ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Text(
+                                                _textControllers[2].text,
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .title,
                                               ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            ],
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 24.0),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: <Widget>[
                                                 Text(
-                                                  _textControllers[2].text,
-                                                  style: Theme.of(context).textTheme.title,
+                                                  "Initial Topup Amount (RM)",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .subhead
+                                                      .copyWith(
+                                                          color: _darkTheme
+                                                              ? Colors.white54
+                                                              : Colors.black54),
                                                 ),
                                               ],
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 24.0),
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: <Widget>[
-                                                  Text(
-                                                    "Initial Topup Amount (RM)",
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .subhead
-                                                        .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
-                                                  ),
-                                                ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Text(
+                                                FlutterMoneyFormatter(
+                                                        amount: double.parse(
+                                                            _textControllers[3]
+                                                                .text))
+                                                    .output
+                                                    .nonSymbol,
+                                                style: TextStyle(
+                                                    fontSize: 60.0,
+                                                    fontWeight:
+                                                        FontWeight.w800),
                                               ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: <Widget>[
-                                                Text(
-                                                  FlutterMoneyFormatter(amount: double.parse(_textControllers[3].text)).output.nonSymbol,
-                                                  style: TextStyle(
-                                                      fontSize: 60.0, fontWeight: FontWeight.w800),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                              children: <Widget>[
-                                                FlatButton(
-                                                  child: Text("Cancel",
-                                                      style: TextStyle(fontSize: 18.0)),
-                                                  onPressed: () {
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: <Widget>[
+                                              FlatButton(
+                                                child: Text("Cancel",
+                                                    style: TextStyle(
+                                                        fontSize: 18.0)),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                              RaisedButton(
+                                                child: Text("Confirm",
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 18.0)),
+                                                onPressed: () {
+                                                  if (makingPayment == false) {
                                                     Navigator.pop(context);
-                                                  },
-                                                ),
-                                                RaisedButton(
-                                                  child: Text("Confirm",
-                                                      style: TextStyle(
-                                                          color: Colors.white, fontSize: 18.0)),
-                                                  onPressed: () {
-
-                                                    if (makingPayment == false) {
-                                                      Navigator.pop(context);
-                                                      _verifyResult = _verify();
-                                                      showModalBottomSheet(
-                                                          isScrollControlled: true,
-                                                          context: context,
-                                                          isDismissible: false,
-                                                          backgroundColor: Colors.transparent,
-                                                          builder: (context) {
-                                                            return Wrap(children: <Widget>[
-                                                              Container(
-                                                                  decoration: BoxDecoration(
-                                                                    color: _darkTheme ? Colors.grey.shade800 : Colors.white,
-                                                                    borderRadius: BorderRadius.only(
-                                                                      topLeft: Radius.circular(18),
-                                                                      topRight: Radius.circular(18),
+                                                    _verifyResult = _verify();
+                                                    showModalBottomSheet(
+                                                        isScrollControlled:
+                                                            true,
+                                                        context: context,
+                                                        isDismissible: false,
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        builder: (context) {
+                                                          return Wrap(
+                                                              children: <
+                                                                  Widget>[
+                                                                Container(
+                                                                    decoration:
+                                                                        BoxDecoration(
+                                                                      color: _darkTheme
+                                                                          ? Colors
+                                                                              .grey
+                                                                              .shade800
+                                                                          : Colors
+                                                                              .white,
+                                                                      borderRadius:
+                                                                          BorderRadius
+                                                                              .only(
+                                                                        topLeft:
+                                                                            Radius.circular(18),
+                                                                        topRight:
+                                                                            Radius.circular(18),
+                                                                      ),
                                                                     ),
-                                                                  ),
-                                                                  child: Padding(
-                                                                      padding:
-                                                                      const EdgeInsets.all(26.0),
-                                                                      child: Center(
-                                                                          child: FutureBuilder<
-                                                                              String>(
-                                                                              future: _verifyResult,
-                                                                              builder:
-                                                                                  (context,
-                                                                                  snapshot) {
-                                                                                switch (snapshot
-                                                                                    .connectionState) {
-                                                                                  case ConnectionState
-                                                                                      .none:
-                                                                                  case ConnectionState
-                                                                                      .waiting: //Display progress circle while loading
-                                                                                    return Column(
-                                                                                        crossAxisAlignment:
-                                                                                        CrossAxisAlignment
-                                                                                            .stretch,
-                                                                                        mainAxisSize:
-                                                                                        MainAxisSize
-                                                                                            .max,
-                                                                                        children: <
-                                                                                            Widget>[
-                                                                                          Center(
-                                                                                              child: SpinKitDoubleBounce(
-                                                                                                color: Theme.of(context).primaryColor,
-                                                                                                size: 50.0,
-                                                                                              )
-                                                                                          )
-                                                                                        ]);
-                                                                                  default: //Display card when loaded
-                                                                                    return snapshot
-                                                                                        .data ==
-                                                                                        'ok'
-                                                                                        ? Column(
-                                                                                        crossAxisAlignment:
-                                                                                        CrossAxisAlignment
-                                                                                            .stretch,
-                                                                                        mainAxisSize:
-                                                                                        MainAxisSize
-                                                                                            .max,
-                                                                                        children: <
-                                                                                            Widget>[
-                                                                                          Center(
-                                                                                            child:
-                                                                                            Icon(
-                                                                                              Icons
-                                                                                                  .check,
-                                                                                              color:
-                                                                                              Color(
-                                                                                                  0xff03da9d),
-                                                                                              size:
-                                                                                              60.0,
-                                                                                            ),
-                                                                                          ),
-                                                                                          Center(
-                                                                                            child:
-                                                                                            Text(
-                                                                                              'Successful',
-                                                                                              style:
-                                                                                              Theme
-                                                                                                  .of(
-                                                                                                  context)
-                                                                                                  .textTheme
-                                                                                                  .title,
-                                                                                              textAlign:
-                                                                                              TextAlign
-                                                                                                  .center,
-                                                                                            ),
-                                                                                          ),
-                                                                                          Padding(
-                                                                                            padding:
-                                                                                            const EdgeInsets
-                                                                                                .only(
-                                                                                                top: 24.0),
-                                                                                          ),
-                                                                                          Row(
-                                                                                            mainAxisAlignment:
-                                                                                            MainAxisAlignment
-                                                                                                .spaceAround,
-                                                                                            children: <
-                                                                                                Widget>[
-                                                                                              RaisedButton(
+                                                                    child: Padding(
+                                                                        padding: const EdgeInsets.all(26.0),
+                                                                        child: Center(
+                                                                            child: FutureBuilder<String>(
+                                                                                future: _verifyResult,
+                                                                                builder: (context, snapshot) {
+                                                                                  switch (snapshot.connectionState) {
+                                                                                    case ConnectionState.none:
+                                                                                    case ConnectionState.waiting: //Display progress circle while loading
+                                                                                      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.max, children: <Widget>[
+                                                                                        Center(
+                                                                                            child: SpinKitDoubleBounce(
+                                                                                          color: Theme.of(context).primaryColor,
+                                                                                          size: 50.0,
+                                                                                        ))
+                                                                                      ]);
+                                                                                    default: //Display card when loaded
+                                                                                      return snapshot.data == 'ok'
+                                                                                          ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.max, children: <Widget>[
+                                                                                              Center(
+                                                                                                child: Icon(
+                                                                                                  Icons.check,
+                                                                                                  color: Color(0xff03da9d),
+                                                                                                  size: 60.0,
+                                                                                                ),
+                                                                                              ),
+                                                                                              Center(
                                                                                                 child: Text(
-                                                                                                    "Confirm",
-                                                                                                    style: TextStyle(
-                                                                                                        color: Colors
-                                                                                                            .white,
-                                                                                                        fontSize: 18.0)),
-                                                                                                onPressed: () {
-                                                                                                  setState(() {
-                                                                                                    makingPayment =
-                                                                                                    false;
-                                                                                                  });
-                                                                                                  Navigator
-                                                                                                      .pop(
-                                                                                                      context);
-                                                                                                  _formProgress -= 3 / _pages.length;
-                                                                                                  _pageViewController.jumpToPage(_pageViewController.initialPage);
-                                                                                                  FocusScope.of(context).unfocus();
-
-                                                                                                },
+                                                                                                  'Successful',
+                                                                                                  style: Theme.of(context).textTheme.title,
+                                                                                                  textAlign: TextAlign.center,
+                                                                                                ),
+                                                                                              ),
+                                                                                              Padding(
+                                                                                                padding: const EdgeInsets.only(top: 24.0),
+                                                                                              ),
+                                                                                              Row(
+                                                                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                                children: <Widget>[
+                                                                                                  RaisedButton(
+                                                                                                    child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                                                                                    onPressed: () {
+                                                                                                      setState(() {
+                                                                                                        makingPayment = false;
+                                                                                                      });
+                                                                                                      Navigator.pop(context);
+                                                                                                      _formProgress -= 3 / _pages.length;
+                                                                                                      _pageViewController.jumpToPage(_pageViewController.initialPage);
+                                                                                                      FocusScope.of(context).unfocus();
+                                                                                                    },
+                                                                                                  )
+                                                                                                ],
                                                                                               )
-                                                                                            ],
-                                                                                          )
-                                                                                        ])
-                                                                                        : Column(
-                                                                                        crossAxisAlignment:
-                                                                                        CrossAxisAlignment
-                                                                                            .stretch,
-                                                                                        mainAxisSize:
-                                                                                        MainAxisSize
-                                                                                            .max,
-                                                                                        children: <
-                                                                                            Widget>[
-                                                                                          Center(
-                                                                                            child:
-                                                                                            Icon(
-                                                                                              Icons
-                                                                                                  .clear,
-                                                                                              color:
-                                                                                              Theme
-                                                                                                  .of(
-                                                                                                  context)
-                                                                                                  .primaryColor,
-                                                                                              size:
-                                                                                              60.0,
-                                                                                            ),
-                                                                                          ),
-                                                                                          Center(
-                                                                                            child:
-                                                                                            Text(
-                                                                                              snapshot
-                                                                                                  .data
-                                                                                                  .toString(),
-                                                                                              style:
-                                                                                              Theme
-                                                                                                  .of(
-                                                                                                  context)
-                                                                                                  .textTheme
-                                                                                                  .title,
-                                                                                              textAlign:
-                                                                                              TextAlign
-                                                                                                  .center,
-                                                                                            ),
-                                                                                          ),
-                                                                                          Padding(
-                                                                                            padding:
-                                                                                            const EdgeInsets
-                                                                                                .only(
-                                                                                                top: 24.0),
-                                                                                          ),
-                                                                                          Row(
-                                                                                            mainAxisAlignment:
-                                                                                            MainAxisAlignment
-                                                                                                .spaceAround,
-                                                                                            children: <
-                                                                                                Widget>[
-                                                                                              RaisedButton(
+                                                                                            ])
+                                                                                          : Column(crossAxisAlignment: CrossAxisAlignment.stretch, mainAxisSize: MainAxisSize.max, children: <Widget>[
+                                                                                              Center(
+                                                                                                child: Icon(
+                                                                                                  Icons.clear,
+                                                                                                  color: Theme.of(context).primaryColor,
+                                                                                                  size: 60.0,
+                                                                                                ),
+                                                                                              ),
+                                                                                              Center(
                                                                                                 child: Text(
-                                                                                                    "Confirm",
-                                                                                                    style: TextStyle(
-                                                                                                        color: Colors
-                                                                                                            .white,
-                                                                                                        fontSize: 18.0)),
-                                                                                                onPressed: () {
-                                                                                                  setState(() {
-                                                                                                    makingPayment =
-                                                                                                    false;
-                                                                                                  });
-                                                                                                  Navigator
-                                                                                                      .pop(
-                                                                                                      context);
-                                                                                                },
+                                                                                                  snapshot.data.toString(),
+                                                                                                  style: Theme.of(context).textTheme.title,
+                                                                                                  textAlign: TextAlign.center,
+                                                                                                ),
+                                                                                              ),
+                                                                                              Padding(
+                                                                                                padding: const EdgeInsets.only(top: 24.0),
+                                                                                              ),
+                                                                                              Row(
+                                                                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                                                                children: <Widget>[
+                                                                                                  RaisedButton(
+                                                                                                    child: Text("Confirm", style: TextStyle(color: Colors.white, fontSize: 18.0)),
+                                                                                                    onPressed: () {
+                                                                                                      setState(() {
+                                                                                                        makingPayment = false;
+                                                                                                      });
+                                                                                                      Navigator.pop(context);
+                                                                                                    },
+                                                                                                  )
+                                                                                                ],
                                                                                               )
-                                                                                            ],
-                                                                                          )
-                                                                                        ]);
-                                                                                }
-                                                                              }))))
-                                                            ]);
-                                                          });
-                                                    } else {
-                                                      Scaffold.of(context).showSnackBar(SnackBar(
-                                                        content: Text(
-                                                            "Please wait for the previous registration to finish first"),
-                                                      ));
-                                                    }
-                                                  },
-                                                )
-                                              ],
-                                            )
-                                          ],
-                                        ),
+                                                                                            ]);
+                                                                                  }
+                                                                                }))))
+                                                              ]);
+                                                        });
+                                                  } else {
+                                                    Scaffold.of(context)
+                                                        .showSnackBar(SnackBar(
+                                                      content: Text(
+                                                          "Please wait for the previous registration to finish first"),
+                                                    ));
+                                                  }
+                                                },
+                                              )
+                                            ],
+                                          )
+                                        ],
                                       ),
-                                    )
-                                  ]);
-                                });
+                                    ),
+                                  )
+                                ]);
+                              });
                         } else {
                           goNext();
                         }
@@ -705,7 +725,6 @@ class _CreateFormState extends State<CreateForm> {
 
   @override
   Widget build(BuildContext context) {
-
     final themeNotifier = Provider.of<ThemeNotifier>(context);
     _darkTheme = (themeNotifier.getTheme() == darkTheme);
 
@@ -747,4 +766,9 @@ class _CreateFormState extends State<CreateForm> {
           }
         });
   }
+}
+
+extension on String {
+  List<String> splitByLength(int length) =>
+      [substring(0, length), substring(length)];
 }
