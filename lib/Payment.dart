@@ -181,7 +181,6 @@ class _PaymentState extends State<Payment> {
 
   bool verifyQRValidity(String qr) {
     var code = qr.splitByLength(1)[1].splitByLength(9)[0];
-    print("Code: " + code);
     var sum = 0;
     for (int i = 0; i < code.length; i++) {
       if (isNumeric(code[code.length - 2]) &&
@@ -189,9 +188,6 @@ class _PaymentState extends State<Payment> {
         if (i < code.length - 2) {
           sum += int.parse(code[i]);
         } else {
-          print("Sum 1: " + sum.toString());
-          print("Sum 2: " + (sum % 10).toString());
-          print("Sum 3: " + code[code.length - 2]);
           if ((sum % 10) == int.parse(code[code.length - 2])) {
             return true;
           } else {
