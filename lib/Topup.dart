@@ -13,7 +13,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:walleTT/pin-pad/numpad.dart';
-import 'package:walleTT/pin-pad/numpad_controller.dart';
 import 'package:walleTT/tabsContainer.dart';
 import 'package:intl/intl.dart';
 
@@ -24,8 +23,6 @@ import 'Home.dart';
 import 'Login.dart';
 
 import 'Product.dart';
-import 'SizeConfig.dart';
-import 'Transactions.dart';
 import 'main.dart';
 
 class Payment extends StatefulWidget {

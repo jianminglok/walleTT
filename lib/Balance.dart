@@ -10,7 +10,7 @@ import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:walleTT/Transactions.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'AppState.dart';
 import 'Home.dart';
@@ -188,7 +188,7 @@ class _BalanceState extends State<Balance> {
                                                 label: Text("Scan QR Code",
                                                     style: TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 18.0)),
+                                                        fontSize: 54.ssp)),
                                                 onPressed: () {
                                                   setState(() {
                                                     _scan();
@@ -240,7 +240,7 @@ class _BalanceState extends State<Balance> {
                                                   label: Text("Scan QR Code",
                                                       style: TextStyle(
                                                           color: Colors.white,
-                                                          fontSize: 18.0)),
+                                                          fontSize: 54.ssp)),
                                                   onPressed: () {
                                                     _scan();
                                                   },
@@ -432,7 +432,7 @@ class _BalanceState extends State<Balance> {
                                                           style: TextStyle(
                                                               color:
                                                                   Colors.white,
-                                                              fontSize: 18.0)),
+                                                              fontSize: 54.ssp)),
                                                       onPressed: () {
                                                         _scan();
                                                       },

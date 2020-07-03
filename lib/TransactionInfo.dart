@@ -45,7 +45,7 @@ class _TransactionInfoState extends State<TransactionInfo> {
     //Do verification before getting order info
 
     var loginMap = new Map<String, dynamic>();
-    loginMap['STORE'] = agentId; //Change to storeId later
+    loginMap['USER'] = agentId; //Change to storeId later
     loginMap['PASS'] = agentSecret; //Change to storeSecret later
     loginMap['type'] = 'login';
 
@@ -53,35 +53,14 @@ class _TransactionInfoState extends State<TransactionInfo> {
 
     try {
       Response response =
-          await Dio().post(Home.serverUrl + "process.php", data: loginData);
+          await Dio().post(Home.serverUrl + "verify.php", data: loginData);
       var jsonData = json.decode(response.toString());
 
       String loginStatus = jsonData["status"];
       String status;
 
-      if (loginStatus == 'store') {
-        //If verification is successful get list of products
-        var map = new Map<String, dynamic>();
-        map['id'] = 'S001';
-        map['type'] = 'products';
-
-        FormData formData = new FormData.fromMap(map);
-
-        try {
-          Response response =
-              await Dio().post(Home.serverUrl + "process.php", data: formData);
-
-          var jsonData = json.decode(response.toString());
-
-          for (var i in jsonData) {
-            productsNameList.add(i["name"]);
-            productsList.add(i["id"]);
-          }
-
-          return true;
-        } catch (e) {
-          print(e);
-        }
+      if (loginStatus == 'agent') {
+        return true;
       } else {
         status = loginStatus;
       }

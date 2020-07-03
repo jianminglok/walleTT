@@ -8,10 +8,10 @@ import 'package:flutter_money_formatter/flutter_money_formatter.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'AppState.dart';
 import 'Home.dart';
-import 'Topup.dart';
 import 'main.dart';
 
 // TODO: refactor this monstrosity of a class
@@ -223,7 +223,7 @@ class _CreateFormState extends State<CreateForm> {
                             ),
                             label: Text("Scan QR Code",
                                 style: TextStyle(
-                                    color: Colors.white, fontSize: 18.0)),
+                                    color: Colors.white, fontSize: 54.ssp)),
                             onPressed: () {
                               _scan();
                             },
