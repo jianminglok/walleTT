@@ -1,0 +1,135 @@
+<!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Abril+Fatface|Poppins:300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script
+src="https://code.jquery.com/jquery-3.4.1.js"
+integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU="
+crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script type="text/javascript" src="qrcode2.js"></script>
+
+<style>
+    * {
+        box-sizing: border-box;
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    .abril{
+        font-family:'Abril Fatface'
+    }
+    .poppins{
+        font-family:'Poppins'
+    }
+    body{
+        margin-top:5rem;
+        margin-bottom: 2rem;
+    }
+    #navbar{
+        background-color:#ef4c3c;
+        box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.3);
+    }
+    .table{
+        box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.3);
+    }
+    button{
+        border:none;
+        padding: 0.4rem, 1 rem;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.2s;
+        border-radius:0px;
+    }
+    .obutton{
+        background-color:#ef4c3c; 
+        color:#FFFFFF;
+        transition: background-color 0.2s;
+    }
+    .obutton:hover{
+        background-color: #b92c1f;
+        transition: background-color 0.2s;
+    }
+    .sb{
+                width: 100%;
+                padding: 15px;
+                margin-top: 10px;
+                border: 0;
+                cursor: pointer;
+                font-weight: bold;
+    }
+    .bbutton{
+        background-color: #444444;
+        color: #ffffff;
+        transition: background-color 0.2s;
+    }
+    .bbutton:hover {
+        background-color: #202020;
+        transition: background-color 0.2s;
+    }
+    .sinput {
+        padding: 0.4rem, 1rem;
+        display:inline-block;
+        height:2rem;
+    }
+    .select-container {
+        height: 2rem;
+        margin-left: 1rem;
+        flex-grow: 1;
+        align-items: center;
+    }
+    .select-container select {
+        border-radius: 0px !IMPORTANT;
+        border: 1px solid #ef4c3c;
+        font-family: 'poppins';
+        font-size: 1rem;
+        padding: 0.4rem 1rem;
+        width:100%;
+        height:100%;
+        background-color:white;
+        color:#303030;
+    }
+    .select-span{
+        display: flex;
+        align-items: center;
+        height: 2rem;
+    }
+    thead {
+        text-align:center;
+    }
+    @media only screen and (max-width: 800px){
+        .table-button {
+            height: 4rem
+        }
+
+        .sm-hide {
+            display: none
+        }
+    }
+    @media only screen and (max-width: 572px){
+        .xs-hide {
+            display: none
+        }
+    }
+    @media only screen and (max-width: 767px){
+        #download {
+            margin-top: 1em
+        }
+    }
+    #qrcodes {
+        max-width: 95vw;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+</style>
