@@ -172,6 +172,38 @@ class _PaymentState extends State<Payment> {
     storeSecret = prefs.getString('secret');
   }
 
+  bool isNumeric(String s) {
+    if (s == null) {
+      return false;
+    }
+    return double.tryParse(s) != null;
+  }
+
+  bool verifyQRValidity(String qr) {
+    var code = qr.splitByLength(1)[1].splitByLength(9)[0];
+    print("Code: " + code);
+    var sum = 0;
+    for (int i = 0; i < code.length; i++) {
+      if (isNumeric(code[code.length - 2]) &&
+          !isNumeric(code[code.length - 1])) {
+        if (i < code.length - 2) {
+          sum += int.parse(code[i]);
+        } else {
+          print("Sum 1: " + sum.toString());
+          print("Sum 2: " + (sum % 10).toString());
+          print("Sum 3: " + code[code.length - 2]);
+          if ((sum % 10) == int.parse(code[code.length - 2])) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else {
+        return false;
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -181,9 +213,9 @@ class _PaymentState extends State<Payment> {
     _checkConnectivity().then((intenet) {
       if (intenet != null && intenet) {
         // Internet Present Case
-      }
-      else {
-        SchedulerBinding.instance.addPostFrameCallback((_) => _showConnectivityDialog());
+      } else {
+        SchedulerBinding.instance
+            .addPostFrameCallback((_) => _showConnectivityDialog());
       }
     });
   }
@@ -269,7 +301,9 @@ class _PaymentState extends State<Payment> {
               itemBuilder: (context) => [
                 PopupMenuItem(
                   value: 1,
-                  child: _darkTheme ? Text("Disable Dark Theme") : Text("Enable Dark Theme"),
+                  child: _darkTheme
+                      ? Text("Disable Dark Theme")
+                      : Text("Enable Dark Theme"),
                 ),
                 PopupMenuItem(
                   value: 2,
@@ -278,7 +312,7 @@ class _PaymentState extends State<Payment> {
               ],
               offset: Offset(0, 7.5),
               onSelected: (value) {
-                if(value == 1) {
+                if (value == 1) {
                   setState(() {
                     _darkTheme = !_darkTheme;
                   });
@@ -434,17 +468,14 @@ class _PaymentState extends State<Payment> {
                                                                                     onPressed: () {
                                                                                       if (appState.getProductQuantities()[index] - 1 >= 0) {
                                                                                         appState.getProductQuantities()[index] -= 1;
-                                                                                        appState.getProductQuantitiesString()[index] =
-                                                                                            appState.getProductQuantities()[index].toString();
+                                                                                        appState.getProductQuantitiesString()[index] = appState.getProductQuantities()[index].toString();
                                                                                         setState(() {
-                                                                                          totalAmount =
-                                                                                              totalAmount - appState.getProductsJson()[index].price.toInt();
+                                                                                          totalAmount = totalAmount - appState.getProductsJson()[index].price.toInt();
                                                                                           _amountText = totalAmount.toString();
                                                                                         });
                                                                                       } else {
                                                                                         Scaffold.of(context).removeCurrentSnackBar();
-                                                                                        Scaffold.of(context)
-                                                                                            .showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
+                                                                                        Scaffold.of(context).showSnackBar(SnackBar(content: Text("Minimum quantity is 0")));
                                                                                       }
                                                                                     },
                                                                                   )),
@@ -554,7 +585,11 @@ class _PaymentState extends State<Payment> {
       String id = await scan(context);
       String displayAmount =
           FlutterMoneyFormatter(amount: double.parse(_amount)).output.nonSymbol;
-      if (id != null && id.isNotEmpty && id.contains('U') && id.contains(';')) {
+      if (id != null &&
+          id.isNotEmpty &&
+          id.contains('U') &&
+          id.length == 69 &&
+          verifyQRValidity(id)) {
         showModalBottomSheet(
             isScrollControlled: true,
             context: context,
@@ -590,7 +625,10 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
+                                    .copyWith(
+                                        color: _darkTheme
+                                            ? Colors.white54
+                                            : Colors.black54),
                               ),
                             ],
                           ),
@@ -615,7 +653,10 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
+                                    .copyWith(
+                                        color: _darkTheme
+                                            ? Colors.white54
+                                            : Colors.black54),
                               ),
                             ],
                           ),
@@ -624,7 +665,7 @@ class _PaymentState extends State<Payment> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
-                              id.split('U')[1].split(';')[0],
+                              id.splitByLength(1)[1].splitByLength(7)[0],
                               style: Theme.of(context).textTheme.title,
                             ),
                           ],
@@ -639,14 +680,20 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
+                                    .copyWith(
+                                        color: _darkTheme
+                                            ? Colors.white54
+                                            : Colors.black54),
                               ),
                               Text(
                                 "Quantity",
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
+                                    .copyWith(
+                                        color: _darkTheme
+                                            ? Colors.white54
+                                            : Colors.black54),
                               ),
                             ],
                           ),
@@ -656,9 +703,12 @@ class _PaymentState extends State<Payment> {
                           children: <Widget>[
                             Expanded(
                                 child: ListView.separated(
-                                    separatorBuilder: (context, index) => Divider(
-                                      color: _darkTheme ? Colors.white54 : Colors.black54,
-                                    ),
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                          color: _darkTheme
+                                              ? Colors.white54
+                                              : Colors.black54,
+                                        ),
                                     shrinkWrap: true,
                                     itemCount: nameList.length,
                                     itemBuilder:
@@ -701,7 +751,10 @@ class _PaymentState extends State<Payment> {
                                 style: Theme.of(context)
                                     .textTheme
                                     .subhead
-                                    .copyWith(color: _darkTheme ? Colors.white54 : Colors.black54),
+                                    .copyWith(
+                                        color: _darkTheme
+                                            ? Colors.white54
+                                            : Colors.black54),
                               ),
                             ],
                           ),
@@ -776,7 +829,9 @@ class _PaymentState extends State<Payment> {
                                         return Wrap(children: <Widget>[
                                           Container(
                                               decoration: BoxDecoration(
-                                                color: _darkTheme ? Colors.grey.shade800 : Colors.white,
+                                                color: _darkTheme
+                                                    ? Colors.grey.shade800
+                                                    : Colors.white,
                                                 borderRadius: BorderRadius.only(
                                                   topLeft: Radius.circular(18),
                                                   topRight: Radius.circular(18),
@@ -808,13 +863,13 @@ class _PaymentState extends State<Payment> {
                                                                         children: <
                                                                             Widget>[
                                                                           Center(
-                                                                            child:
-                                                                              Center(
+                                                                              child: Center(
                                                                                   child: SpinKitDoubleBounce(
-                                                                                    color: Theme.of(context).primaryColor,
-                                                                                    size: 50.0,
-                                                                                  ))
-                                                                          )
+                                                                            color:
+                                                                                Theme.of(context).primaryColor,
+                                                                            size:
+                                                                                50.0,
+                                                                          )))
                                                                         ]);
                                                                   default: //Display card when loaded
                                                                     return snapshot.data ==
@@ -916,7 +971,9 @@ class _PaymentState extends State<Payment> {
                 )
               ]);
             });
-      } else if (id != null && id.isNotEmpty && !id.contains('U') && !id.contains(';')) {
+      } else if ((id != null && id.isNotEmpty && !id.contains('U')) ||
+          (id != null && id.isNotEmpty && id.length != 69) ||
+          (id != null && id.isNotEmpty && !verifyQRValidity(id))) {
         Scaffold.of(context).removeCurrentSnackBar();
         Scaffold.of(context).showSnackBar(SnackBar(
           content: Text("Please scan a valid QR code"),
@@ -971,8 +1028,8 @@ class _PaymentState extends State<Payment> {
                   Navigator.pop(context);
                   Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                          builder: (BuildContext ctx) => Login()),(Route<dynamic> route) => false);
+                      MaterialPageRoute(builder: (BuildContext ctx) => Login()),
+                      (Route<dynamic> route) => false);
                 },
               ),
             ],
@@ -981,19 +1038,30 @@ class _PaymentState extends State<Payment> {
           return AlertDialog(
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            title: Text("Confirm logout?", style: TextStyle(fontFamily: 'Rubik'),),
+            title: Text(
+              "Confirm logout?",
+              style: TextStyle(fontFamily: 'Rubik'),
+            ),
             content: Text(
-                "You can only perform transactions after you have logged in", style: TextStyle(fontFamily: 'Rubik'),),
+              "You can only perform transactions after you have logged in",
+              style: TextStyle(fontFamily: 'Rubik'),
+            ),
             actions: <Widget>[
               FlatButton(
-                child: Text("Cancel", style: TextStyle(fontFamily: 'Rubik'),),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(fontFamily: 'Rubik'),
+                ),
                 textColor: Colors.black87,
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
               ),
               FlatButton(
-                child: Text("Logout", style: TextStyle(fontFamily: 'Rubik'),),
+                child: Text(
+                  "Logout",
+                  style: TextStyle(fontFamily: 'Rubik'),
+                ),
                 textColor: Colors.red,
                 onPressed: () async {
                   SharedPreferences prefs =
@@ -1005,8 +1073,8 @@ class _PaymentState extends State<Payment> {
                   Navigator.pop(context);
                   Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                          builder: (BuildContext ctx) => Login()),(Route<dynamic> route) => false);
+                      MaterialPageRoute(builder: (BuildContext ctx) => Login()),
+                      (Route<dynamic> route) => false);
                 },
               ),
             ],
@@ -1022,8 +1090,8 @@ class _PaymentState extends State<Payment> {
         if (Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text("Error"),
-            content: Text(
-                "Please make sure you have an active internet connection"),
+            content:
+                Text("Please make sure you have an active internet connection"),
             actions: <Widget>[
               CupertinoDialogAction(
                 child: Text("OK"),
@@ -1036,13 +1104,21 @@ class _PaymentState extends State<Payment> {
         } else
           return AlertDialog(
             shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            title: Text("Error", style: TextStyle(fontFamily: 'Rubik'),),
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: Text(
+              "Error",
+              style: TextStyle(fontFamily: 'Rubik'),
+            ),
             content: Text(
-                "Please make sure you have an active internet connection", style: TextStyle(fontFamily: 'Rubik'),),
+              "Please make sure you have an active internet connection",
+              style: TextStyle(fontFamily: 'Rubik'),
+            ),
             actions: <Widget>[
               FlatButton(
-                child: Text("OK", style: TextStyle(fontFamily: 'Rubik'),),
+                child: Text(
+                  "OK",
+                  style: TextStyle(fontFamily: 'Rubik'),
+                ),
                 textColor: Colors.black87,
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -1053,4 +1129,9 @@ class _PaymentState extends State<Payment> {
       },
     );
   }
+}
+
+extension on String {
+  List<String> splitByLength(int length) =>
+      [substring(0, length), substring(length)];
 }
