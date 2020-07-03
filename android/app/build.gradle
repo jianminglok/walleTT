@@ -30,7 +30,6 @@ if (keystorePropertiesFile.exists()) {
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 28
@@ -80,6 +79,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
-    api 'com.google.firebase:firebase-ml-vision-image-label-model:19.0.0'
-    api 'com.google.firebase:firebase-ml-vision-face-model:19.0.0'
 }
