@@ -70,7 +70,7 @@ class _BalanceState extends State<Balance> {
 
           List<String> strings = [];
 
-          if (jsonData['status'] == 'User does not exist' || jsonData['status'] == 'Failed to fetch data' || jsonData == 'User does not exist!') {
+          if (jsonData['status'] == 'User does not exist' || jsonData['status'] == 'Failed to fetch data' || jsonData['status'] == 'User does not exist!') {
             strings.add(jsonData['status']);
           } else {
             strings.add(jsonData['name']);
