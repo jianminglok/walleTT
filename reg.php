@@ -89,6 +89,19 @@
                 $stuff = explode(';', $_POST['reg']);
                 $new_id = substr($_POST['reg'], 0, 8);
                 $code = substr($_POST['reg'], 9, 69);
+                $codesum = $_POST['reg'][8];
+                
+                $crypt = str_split($new_id);
+                $cryptsum = 0;
+                for($y = 0; $y < sizeof($crypt); $y++) {
+                    $cryptsum += (int)$new_id[$y];
+                }
+                
+                if((int)$codesum == $cryptsum % 10) {
+                    $passed = true;
+                } else {
+                    $passed = false;
+                }
             }
             else
             {
@@ -96,7 +109,7 @@
                 $new_id='U'.str_pad($_POST['reg'], 7, "0", STR_PAD_LEFT);
             }
 
-            if(isset($_POST['type']) && !password_verify(substr($new_id, 3, -1), $code))
+            if((isset($_POST['type']) && !password_verify(substr($new_id, 3, -1), $code)) || (isset($_POST['type']) && !$passed))
             {
                 echo 'Registration failed';
             }

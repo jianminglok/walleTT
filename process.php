@@ -16,8 +16,21 @@
                 $stuff = explode(';', $_POST['id']);
                 $user = substr($_POST['id'], 0, 8);
                 $code = substr($_POST['id'], 9, 69);
+                $codesum = $_POST['id'][8];
+                
+                $crypt = str_split($user);
+                $cryptsum = 0;
+                for($y = 0; $y < sizeof($crypt); $y++) {
+                    $cryptsum += (int)$user[$y];
+                }
+                
+                if((int)$codesum == $cryptsum % 10) {
+                    $passed = true;
+                } else {
+                    $passed = false;
+                }
 
-                if(!password_verify(substr($user, 3, -1), $code))
+                if(!password_verify(substr($user, 3, -1), $code) || !$passed)
                 {
                     $arr['status'] = 'User does not exist';
                 }
@@ -60,8 +73,22 @@
             $total=intval($_POST['amount']);
             $products=$_POST['products'];
             $amounts=$_POST['numbers'];
+            
+            $codesum = $_POST['userId'][8];
+            
+            $crypt = str_split($user);
+            $cryptsum = 0;
+            for($y = 0; $y < sizeof($crypt); $y++) {
+                $cryptsum += (int)$user[$y];
+            }
+            
+            if((int)$codesum == $cryptsum % 10) {
+                $passed = true;
+            } else {
+                $passed = false;
+            }
 
-            if(!password_verify(substr($user, 3, -1), $code))
+            if(!password_verify(substr($user, 3, -1), $code) || !$passed)
             {
                 $arr['status'] = 'User does not exist';
             }
@@ -104,8 +131,22 @@
             $amount = $_POST['amount'];
             $time = $_POST['time'];
             $agent = $_POST['agentId'];
+            
+            $codesum = $_POST['userId'][8];
+            
+            $crypt = str_split($user);
+            $cryptsum = 0;
+            for($y = 0; $y < sizeof($crypt); $y++) {
+                $cryptsum += (int)$user[$y];
+            }
+            
+            if((int)$codesum == $cryptsum % 10) {
+                $passed = true;
+            } else {
+                $passed = false;
+            }
 
-            if(!password_verify(substr($user, 3, -1), $code))
+            if(!password_verify(substr($user, 3, -1), $code) || !$passed)
             {
                 $arr['status'] = 'User does not exist';
             }
