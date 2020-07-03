@@ -14,8 +14,8 @@
             if(mysqli_stmt_prepare($stmt, "SELECT _name, _balance, _remark  FROM users WHERE _id = ? ;"))
             {
                 $stuff = explode(';', $_POST['id']);
-                $user = $stuff[0];
-                $code = $stuff[1];
+                $user = substr($_POST['id'], 0, 8);
+                $code = substr($_POST['id'], 9, 69);
 
                 if(!password_verify(substr($user, 3, -1), $code))
                 {
@@ -53,8 +53,8 @@
         {
             $arr=array();
             $stuff = explode(';', $_POST['userId']);
-            $user = $stuff[0];
-            $code = $stuff[1];
+            $user = substr($_POST['userId'], 0, 8);
+            $code = substr($_POST['userId'], 9, 69);
             $store=$_POST['storeId'];
             $time=$_POST['time'];
             $total=intval($_POST['amount']);
@@ -99,8 +99,8 @@
         {
             $arr=array();
             $stuff = explode(';', $_POST['userId']);
-            $user = $stuff[0];
-            $code = $stuff[1];
+            $user = substr($_POST['userId'], 0, 8);
+            $code = substr($_POST['userId'], 9, 69);
             $amount = $_POST['amount'];
             $time = $_POST['time'];
             $agent = $_POST['agentId'];

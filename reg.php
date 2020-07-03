@@ -87,8 +87,8 @@
             {
                 $agent = $_POST['agentId'];
                 $stuff = explode(';', $_POST['reg']);
-                $new_id = $stuff[0];
-                $code = $stuff[1];
+                $new_id = substr($_POST['reg'], 0, 8);
+                $code = substr($_POST['reg'], 9, 69);
             }
             else
             {
